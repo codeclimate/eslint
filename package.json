@@ -25,6 +25,7 @@
     "README.md",
     "bin",
     "conf",
+    "docs",
     "lib"
   ],
   "repository": {
