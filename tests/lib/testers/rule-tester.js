@@ -1,6 +1,8 @@
 /**
  * @fileoverview Tests for ESLint Tester
  * @author Nicholas C. Zakas
+ * @Copyright 2015 Kevin Partington. All rights reserved.
+ * @copyright 2015 Nicholas C. Zakas. All rights reserved.
  */
 "use strict";
 
@@ -76,7 +78,7 @@ describe("RuleTester", function() {
                     { code: "eval(foo)", errors: [{ message: "eval sucks.", type: "CallExpression"}] }
                 ]
             });
-        }, /^Should have no errors but had 1/);
+        }, /Should have no errors but had 1/);
     });
 
     it("should throw an error when valid code is invalid", function() {
@@ -90,7 +92,7 @@ describe("RuleTester", function() {
                     { code: "eval(foo)", errors: [{ message: "eval sucks.", type: "CallExpression"}] }
                 ]
             });
-        }, /^Should have no errors but had 1/);
+        }, /Should have no errors but had 1/);
     });
 
     it("should throw an error if invalid code is valid", function() {
@@ -104,7 +106,63 @@ describe("RuleTester", function() {
                     { code: "Eval(foo)", errors: [{ message: "eval sucks.", type: "CallExpression"}] }
                 ]
             });
-        }, /^Should have 1 errors but had 0/);
+        }, /Should have 1 errors but had 0/);
+    });
+
+    it("should throw an error when the error message is wrong", function() {
+        assert.throws(function() {
+            ruleTester.run("no-var", require("../../fixtures/testers/rule-tester/no-var"), {
+                // Only the invalid test matters here
+                valid: [
+                    "bar = baz;"
+                ],
+                invalid: [
+                    { code: "var foo = bar;", errors: [{ message: "Bad error message." }] }
+                ]
+            });
+        }, /Error message should be /);
+    });
+
+    it("should throw an error when the error is neither an object nor a string", function() {
+        assert.throws(function() {
+            ruleTester.run("no-var", require("../../fixtures/testers/rule-tester/no-var"), {
+                // Only the invalid test matters here
+                valid: [
+                    "bar = baz;"
+                ],
+                invalid: [
+                    { code: "var foo = bar;", errors: [42] }
+                ]
+            });
+        }, /Error should be a string or object/);
+    });
+
+    it("should throw an error when the error is a string and it does not match error message", function() {
+        assert.throws(function() {
+            ruleTester.run("no-var", require("../../fixtures/testers/rule-tester/no-var"), {
+                // Only the invalid test matters here
+                valid: [
+                    "bar = baz;"
+                ],
+                invalid: [
+                    { code: "var foo = bar;", errors: ["Bad error message."] }
+                ]
+            });
+        }, /Error message should be /);
+    });
+
+    it("should not throw an error when the error is a string and it matches error message", function() {
+        assert.doesNotThrow(function() {
+            ruleTester.run("no-var", require("../../fixtures/testers/rule-tester/no-var"), {
+                // Only the invalid test matters here
+                valid: [
+                    "bar = baz;"
+                ],
+                invalid: [
+                    { code: "var foo = bar;", errors: ["Bad var."] }
+                ]
+            });
+        });
     });
 
     it("should throw an error when the expected output doesn't match", function() {
@@ -118,7 +176,7 @@ describe("RuleTester", function() {
                     { code: "var foo = bar;", output: "foo = bar", errors: [{ message: "Bad var.", type: "VariableDeclaration"}] }
                 ]
             });
-        }, /^Output is incorrect/);
+        }, /Output is incorrect/);
     });
 
     it("should throw an error if invalid code specifies wrong type", function() {
@@ -132,7 +190,7 @@ describe("RuleTester", function() {
                     { code: "eval(foo)", errors: [{ message: "eval sucks.", type: "CallExpression2"}] }
                 ]
             });
-        }, /^Error type should be CallExpression2/);
+        }, /Error type should be CallExpression2/);
     });
 
     it("should throw an error if invalid code specifies wrong line", function() {
@@ -146,7 +204,7 @@ describe("RuleTester", function() {
                     { code: "eval(foo)", errors: [{ message: "eval sucks.", type: "CallExpression", line: 5 }] }
                 ]
             });
-        }, /^Error line should be 5/);
+        }, /Error line should be 5/);
     });
 
     it("should not skip line assertion if line is a falsy value", function() {
@@ -207,7 +265,7 @@ describe("RuleTester", function() {
                     ] }
                 ]
             });
-        }, /^Should have 2 errors but had 1/);
+        }, /Should have 2 errors but had 1/);
     });
 
     it("should throw an error if invalid code has the wrong explicit number of errors", function() {
@@ -221,7 +279,7 @@ describe("RuleTester", function() {
                     { code: "eval(foo)", errors: 2 }
                 ]
             });
-        }, /^Should have 2 errors but had 1/);
+        }, /Should have 2 errors but had 1/);
     });
 
     it("should not throw an error if invalid code has at least an expected empty error object", function() {
@@ -463,4 +521,60 @@ describe("RuleTester", function() {
         });
     });
 
+    it("should throw an error if AST was modified", function() {
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast"), {
+                valid: [
+                    "var foo = 0;"
+                ],
+                invalid: []
+            });
+        }, "Rule should not modify AST.");
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast"), {
+                valid: [],
+                invalid: [
+                    {code: "var bar = 0;", errors: ["error"]}
+                ]
+            });
+        }, "Rule should not modify AST.");
+    });
+
+    it("should throw an error if AST was modified (at Program)", function() {
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast-at-first"), {
+                valid: [
+                    "var foo = 0;"
+                ],
+                invalid: []
+            });
+        }, "Rule should not modify AST.");
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast-at-first"), {
+                valid: [],
+                invalid: [
+                    {code: "var bar = 0;", errors: ["error"]}
+                ]
+            });
+        }, "Rule should not modify AST.");
+    });
+
+    it("should throw an error if AST was modified (at Program:exit)", function() {
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast-at-last"), {
+                valid: [
+                    "var foo = 0;"
+                ],
+                invalid: []
+            });
+        }, "Rule should not modify AST.");
+        assert.throws(function() {
+            ruleTester.run("foo", require("../../fixtures/testers/rule-tester/modify-ast-at-last"), {
+                valid: [],
+                invalid: [
+                    {code: "var bar = 0;", errors: ["error"]}
+                ]
+            });
+        }, "Rule should not modify AST.");
+    });
 });

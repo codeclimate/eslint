@@ -19,6 +19,7 @@ The following patterns are considered problems:
 
 ```js
 /*eslint no-shadow: 2*/
+/*eslint-env es6*/
 
 var a = 3;
 function b() {
@@ -41,11 +42,11 @@ if (true) {
 
 ### Options
 
-This rule takes one option, an object, with properties `"builtinGlobals"` and `"hoist"`.
+This rule takes one option, an object, with properties `"builtinGlobals"`, `"hoist"` and `"allow"`.
 
 ```json
 {
-    "no-shadow": [2, {"builtinGlobals": false, "hoist": "functions"}]
+    "no-shadow": [2, {"builtinGlobals": false, "hoist": "functions", "allow": []}]
 }
 ```
 
@@ -78,6 +79,7 @@ With `"hoist"` set to `"all"`, both `let a` and `let b` in the `if` statement ar
 
 ```js
 /*eslint no-shadow: [2, { "hoist": "all" }]*/
+/*eslint-env es6*/
 
 if (true) {
     let a = 3;    /*error a is already declared in the upper scope.*/
@@ -94,6 +96,7 @@ With `"hoist"` set to `"functions"`, `let b` is considered a warning. But `let a
 
 ```js
 /*eslint no-shadow: [2, { "hoist": "functions" }]*/
+/*eslint-env es6*/
 
 if (true) {
     let a = 3;
@@ -110,6 +113,7 @@ With `"hoist"` set to `"never"`, neither `let a` nor `let b` in the `if` stateme
 
 ```js
 /*eslint no-shadow: [2, { "hoist": "never" }]*/
+/*eslint-env es6*/
 
 if (true) {
     let a = 3;
@@ -120,6 +124,33 @@ let a = 5;
 function b() {}
 ```
 
+#### allow
+
+The option is an array of identifier names to be allowed (ie. "resolve", "reject", "done", "cb" etc.):
+
+```json
+{
+    "rules": {
+        "no-shadow": [2, {"allow": ["done"]}]
+    }
+}
+```
+
+Allows for the following code to be valid:
+
+```js
+import async from 'async';
+
+function foo(done) {
+  async.map([1, 2], function (e, done) {
+    done(null, e * 2)
+  }, done);
+}
+
+foo(function (err, result) {
+  console.log({ err, result });
+});
+```
 
 ## Further Reading
 

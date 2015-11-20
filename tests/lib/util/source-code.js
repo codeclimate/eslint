@@ -94,8 +94,24 @@ describe("SourceCode", function() {
             }, /missing range information/);
         });
 
+        it("should store all tokens and comments sorted by range", function() {
+            var comments = [
+                { range: [0, 2] },
+                { range: [10, 12] }
+            ];
+            var tokens = [
+                { range: [3, 8] },
+                { range: [8, 10] },
+                { range: [12, 20] }
+            ];
+            var sourceCode = new SourceCode("", { comments: comments, tokens: tokens, loc: {}, range: [] });
 
+            var actual = sourceCode.tokensAndComments;
+            var expected = [comments[0], tokens[0], tokens[1], comments[1], tokens[2]];
+            assert.deepEqual(actual, expected);
+        });
     });
+
 
     describe("getJSDocComment()", function() {
 
@@ -585,6 +601,62 @@ describe("SourceCode", function() {
             assert.isTrue(spy.calledTwice, "Event handler should be called.");
         });
 
+        it("should get JSDoc comment for node when the node is a ClassExpression", function() {
+
+            var code = [
+                "/** Merges two objects together.*/",
+                "var A = class {",
+                "};"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.equal(jsdoc.type, "Block");
+                assert.equal(jsdoc.value, "* Merges two objects together.");
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("ClassExpression", spy);
+            eslint.verify(code, { rules: {}, ecmaFeatures: {classes: true}}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
+        it("should get JSDoc comment for node when the node is a ClassDeclaration", function() {
+
+            var code = [
+                "/** Merges two objects together.*/",
+                "class A {",
+                "};"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.equal(jsdoc.type, "Block");
+                assert.equal(jsdoc.value, "* Merges two objects together.");
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("ClassDeclaration", spy);
+            eslint.verify(code, { rules: {}, ecmaFeatures: {classes: true}}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
     });
 
     describe("getComments()", function() {
@@ -836,14 +908,23 @@ describe("SourceCode", function() {
             }
         };
 
-        it("should work when passed a SourceCode object", function() {
+        it("should work when passed a SourceCode object without a config", function() {
+            var ast = espree.parse(TEST_CODE, DEFAULT_CONFIG);
+
+            var sourceCode = new SourceCode(TEST_CODE, ast),
+                messages = eslint.verify(sourceCode);
+
+            assert.equal(messages.length, 0);
+        });
+
+        it("should work when passed a SourceCode object containing ES6 syntax and config", function() {
             var sourceCode = new SourceCode("let foo = bar;", AST),
                 messages = eslint.verify(sourceCode, CONFIG);
 
             assert.equal(messages.length, 0);
         });
 
-        it("should report an error when blockBindings is false", function() {
+        it("should report an error when using let and blockBindings is false", function() {
             var sourceCode = new SourceCode("let foo = bar;", AST),
                 messages = eslint.verify(sourceCode, {
                     ecmaFeatures: { blockBindings: true },

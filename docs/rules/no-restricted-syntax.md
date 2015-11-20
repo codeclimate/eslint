@@ -1,6 +1,8 @@
 # Disallow certain syntax (no-restricted-syntax)
 
-Some code bases prefer to not use certain features of JavaScript that are identified on the parsed AST such as `FunctionExpression` or `WithStatement`. This is implemented to warn on any AST node type that is passed to it. You may find the full list of AST node names you can use [on GitHub](https://github.com/eslint/espree/blob/master/lib/ast-node-types.js) and use the [online parser](http://eslint.org/parser/) to see what type of nodes your code consists of.
+JavaScript has a lot of language features, and not everyone likes every features. As a result, some projects choose to disallow the use of certain language features altogether. For instance, you might decide to disallow the use of `try-catch` or `class`.
+
+Rather than creating separate rules for every language feature you want to turn off, this rule allows you to configure the syntax elements you want to restrict use of. These elements are represented by their [ESTree](https://github.com/estree/estree) node types. For example, a function declaration is represented by `FunctionDeclaration` and the `with` statement is represented by `WithStatement`. You may find the full list of AST node names you can use [on GitHub](https://github.com/eslint/espree/blob/master/lib/ast-node-types.js) and use the [online parser](http://eslint.org/parser/) to see what type of nodes your code consists of.
 
 ## Rule Details
 
@@ -20,7 +22,7 @@ This rule takes a list of strings where strings denote the node types:
 
 The following patterns are considered problems:
 
-```
+```js
 /* eslint no-restricted-syntax: [2, "FunctionExpression", "WithStatement"] */
 
 with (me) {                       /*error Using "WithStatement" is not allowed.*/

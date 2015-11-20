@@ -34,6 +34,7 @@ Please note your code in ES2015 Modules/Classes is always the strict mode.
 
 ```js
 /*eslint no-invalid-this: 2*/
+/*eslint-env es6*/
 
 this.a = 0;            /*error Unexpected `this`.*/
 baz(() => this);       /*error Unexpected `this`.*/
@@ -89,7 +90,8 @@ foo.forEach(function() {
 ### The following patterns are not considered problems:
 
 ```js
-/*eslint no-invalid-regexp: 2*/
+/*eslint no-invalid-this: 2*/
+/*eslint-env es6*/
 
 function Foo() {
     // OK, this is in a legacy style constructor.

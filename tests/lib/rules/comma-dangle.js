@@ -32,13 +32,15 @@ ruleTester.run("comma-dangle", rule, {
         "[\n,\n]",
         "[]",
         "[\n]",
-
+        { code: "var foo = [\n      (bar ? baz : qux),\n    ];", options: ["always-multiline"] },
         { code: "var foo = { bar: 'baz' }", options: ["never"] },
         { code: "var foo = {\nbar: 'baz'\n}", options: ["never"] },
         { code: "var foo = [ 'baz' ]", options: ["never"] },
         { code: "var { a, b } = foo;", options: ["never"], ecmaFeatures: { destructuring: true } },
         { code: "var [ a, b ] = foo;", options: ["never"], ecmaFeatures: { destructuring: true } },
 
+        { code: "[(1),]", options: [ "always" ] },
+        { code: "var x = { foo: (1),};", options: [ "always" ] },
         { code: "var foo = { bar: 'baz', }", options: [ "always" ] },
         { code: "var foo = {\nbar: 'baz',\n}", options: [ "always" ] },
         { code: "var foo = {\nbar: 'baz'\n,}", options: [ "always" ] },
@@ -505,6 +507,30 @@ ruleTester.run("comma-dangle", rule, {
                     type: "Identifier",
                     line: 1,
                     column: 11
+                }
+            ]
+        },
+        {
+            code: "[(1),]",
+            options: [ "never" ],
+            errors: [
+                {
+                    message: "Unexpected trailing comma.",
+                    type: "Literal",
+                    line: 1,
+                    column: 5
+                }
+            ]
+        },
+        {
+            code: "var x = { foo: (1),};",
+            options: [ "never" ],
+            errors: [
+                {
+                    message: "Unexpected trailing comma.",
+                    type: "Property",
+                    line: 1,
+                    column: 19
                 }
             ]
         },

@@ -20,7 +20,8 @@ var checker = require("npm-license"),
     os = require("os"),
     path = require("path"),
     semver = require("semver"),
-    ejs = require("ejs");
+    ejs = require("ejs"),
+    loadPerf = require("load-perf");
 
 //------------------------------------------------------------------------------
 // Settings
@@ -369,7 +370,8 @@ function lintMarkdown(files) {
             MD029: false, // Ordered list item prefix
             MD030: false, // Spaces after list markers
             MD034: false, // Bare URL used
-            MD040: false  // Fenced code blocks should have a language specified
+            MD040: false, // Fenced code blocks should have a language specified
+            MD041: false  // First line in file should be a top level header
         },
         result = markdownlint.sync({
             files: files,
@@ -950,14 +952,26 @@ target.checkGitCommit = function() {
 
         // Check for tag at start of message
         if (!TAG_REGEX.test(commitMsgs[0])) {
-            echo(" - Commit message must start with one of:\n    'Fix:'\n    'Update:'\n    'Breaking:'\n    'Docs:'\n    'Build:'\n    'New:'\n    'Upgrade:'");
+            echo([" - Commit summary must start with one of:",
+                "    'Fix:'",
+                "    'Update:'",
+                "    'Breaking:'",
+                "    'Docs:'",
+                "    'Build:'",
+                "    'New:'",
+                "    'Upgrade:'",
+                "   Please refer to the contribution guidelines for more details."].join("\n"));
             failed = true;
         }
 
         // Check for an issue reference at end (unless it's a documentation commit)
         if (!/^Docs:/.test(commitMsgs[0])) {
             if (!ISSUE_REGEX.test(commitMsgs[0])) {
-                echo(" - Commit message must end with with one of:\n    '(fixes #1234)'\n    '(refs #1234)'\n   Where '1234' is the issue being addressed.");
+                echo([" - Commit summary must end with with one of:",
+                    "    '(fixes #1234)'",
+                    "    '(refs #1234)'",
+                    "   Where '1234' is the issue being addressed.",
+                    "   Please refer to the contribution guidelines for more details."].join("\n"));
                 failed = true;
             }
         }
@@ -995,10 +1009,32 @@ function time(cmd, runs, runNumber, results, cb) {
 
 }
 
+/**
+ * Run the load performance for eslint
+ * @returns {void}
+ * @private
+ */
+function loadPerformance() {
+    var results = [];
+    for (var cnt = 0; cnt < 5; cnt++) {
+        var loadPerfData = loadPerf({
+            checkDependencies: false
+        });
+
+        echo("Load performance Run #" + (cnt + 1) + ":  %dms", loadPerfData.loadTime);
+        results.push(loadPerfData.loadTime);
+    }
+    results.sort(function(a, b) {
+        return a - b;
+    });
+    var median = results[~~(results.length / 2)];
+    echo("\nLoad Performance median :  %dms", median);
+}
+
 target.perf = function() {
     var cpuSpeed = os.cpus()[0].speed,
         max = PERF_MULTIPLIER / cpuSpeed,
-        cmd = ESLINT + "./tests/performance/jshint.js";
+        cmd = ESLINT + "--no-ignore ./tests/performance/jshint.js";
 
     echo("CPU Speed is %d with multiplier %d", cpuSpeed, PERF_MULTIPLIER);
 
@@ -1011,10 +1047,11 @@ target.perf = function() {
 
         if (median > max) {
             echo("Performance budget exceeded: %dms (limit: %dms)", median, max);
-            exit(1);
         } else {
             echo("Performance budget ok:  %dms (limit: %dms)", median, max);
         }
+        echo("\n");
+        loadPerformance();
     });
 
 };

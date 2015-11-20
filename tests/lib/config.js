@@ -12,6 +12,7 @@
 var assert = require("chai").assert,
     path = require("path"),
     fs = require("fs"),
+    os = require("os"),
     Config = require("../../lib/config"),
     sinon = require("sinon"),
     proxyquire = require("proxyquire");
@@ -19,7 +20,7 @@ var assert = require("chai").assert,
 require("shelljs/global");
 proxyquire = proxyquire.noCallThru().noPreserveCache();
 
-/* global tempdir, mkdir, rm, cp */
+/* global mkdir, rm, cp */
 
 
 /**
@@ -75,7 +76,7 @@ describe("Config", function() {
 
     // copy into clean area so as not to get "infected" by this project's .eslintrc files
     before(function() {
-        fixtureDir = tempdir() + "/eslint/fixtures";
+        fixtureDir = os.tmpdir() + "/eslint/fixtures";
         mkdir("-p", fixtureDir);
         cp("-r", "./tests/fixtures/config-hierarchy", fixtureDir);
     });
@@ -682,6 +683,26 @@ describe("Config", function() {
             assert.throw(function() {
                 new StubbedConfig({ useEslintrc: false, configFile: configPath }); // eslint-disable-line no-new
             });
+        });
+
+        it("should extend using a .js file", function() {
+            var stubSetup = {};
+            stubSetup[path.resolve(__dirname, "../fixtures/config-extends/js/foo.js")] = {
+                rules: {
+                    eqeqeq: [2, "smart"]
+                }
+            };
+            var StubbedConfig = proxyquire("../../lib/config", stubSetup);
+
+            var configPath = path.resolve(__dirname, "../fixtures/config-extends/js/.eslintrc"),
+                configHelper = new StubbedConfig({ useEslintrc: false, configFile: configPath }),
+                expected = {
+                    rules: { eqeqeq: [2, "smart"], "quotes": [2, "double"], "valid-jsdoc": 0 },
+                    env: { "browser": false }
+                },
+                actual = configHelper.getConfig(configPath);
+
+            assertConfigsEqual(actual, expected);
         });
 
         it("should extend package configuration without prefix", function() {

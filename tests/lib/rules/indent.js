@@ -54,6 +54,86 @@ ruleTester.run("indent", rule, {
     valid: [
         {
             code:
+            "bridge.callHandler(\n" +
+            "  'getAppVersion', 'test23', function(responseData) {\n" +
+            "    window.ah.mobileAppVersion = responseData;\n" +
+            "  }\n" +
+            ");\n",
+            options: [2]
+        },
+        {
+            code:
+            "bridge.callHandler(\n" +
+            "  'getAppVersion', 'test23', function(responseData) {\n" +
+            "    window.ah.mobileAppVersion = responseData;\n" +
+            "  });\n",
+            options: [2]
+        },
+        {
+            code:
+            "bridge.callHandler(\n" +
+            "  'getAppVersion',\n" +
+            "  null,\n" +
+            "  function responseCallback(responseData) {\n" +
+            "    window.ah.mobileAppVersion = responseData;\n" +
+            "  }\n" +
+            ");\n",
+            options: [2]
+        },
+        {
+            code:
+            "bridge.callHandler(\n" +
+            "  'getAppVersion',\n" +
+            "  null,\n" +
+            "  function responseCallback(responseData) {\n" +
+            "    window.ah.mobileAppVersion = responseData;\n" +
+            "  });\n",
+            options: [2]
+        },
+        {
+            code:
+            "function doStuff(keys) {\n" +
+            "    _.forEach(\n" +
+            "        keys,\n" +
+            "        key => {\n" +
+            "            doSomething(key);\n" +
+            "        }\n" +
+            "   );\n" +
+            "}\n",
+            options: [4],
+            ecmaFeatures: {arrowFunctions: true}
+        },
+        {
+            code:
+            "example(\n" +
+            "    function () {\n" +
+            "        console.log('example');\n" +
+            "    }\n" +
+            ");\n",
+            options: [4]
+        },
+        {
+            code:
+            "let foo = somethingList\n" +
+            "    .filter(x => {\n" +
+            "        return x;\n" +
+            "    })\n" +
+            "    .map(x => {\n" +
+            "        return 100 * x;\n" +
+            "    });\n",
+            options: [4],
+            ecmaFeatures: {arrowFunctions: true, blockBindings: true}
+        },
+        {
+            code:
+            "require('http').request({hostname: 'localhost',\n" +
+            "                         port: 80}, function(res) {\n" +
+            "  res.end();\n" +
+            "});\n",
+            options: [2]
+        },
+        {
+            code:
             "function test() {\n" +
             "  return client.signUp(email, PASSWORD, { preVerified: true })\n" +
             "    .then(function (result) {\n" +
@@ -67,6 +147,15 @@ ruleTester.run("indent", rule, {
             "    });\n" +
             "}",
             options: [2]
+        },
+        {
+            code:
+            "it('should... some lengthy test description that is forced to be' +\n" +
+            "  'wrapped into two lines since the line length limit is set', () => {\n" +
+            "  expect(true).toBe(true);\n" +
+            "});\n",
+            options: [2],
+            ecmaFeatures: {arrowFunctions: true}
         },
         {
             code:
@@ -860,6 +949,17 @@ ruleTester.run("indent", rule, {
                 "    },\n" +
                 "    someOtherValue = 'someOtherValue';\n",
             ecmaFeatures: { arrowFunctions: true, blockBindings: true }
+        },
+        {
+            code:
+            "[\n" +
+            "  'a',\n" +
+            "  'b'\n" +
+            "].sort().should.deepEqual([\n" +
+            "  'x',\n" +
+            "  'y'\n" +
+            "]);\n",
+            options: [2]
         }
     ],
     invalid: [
@@ -986,10 +1086,8 @@ ruleTester.run("indent", rule, {
                 [392, 2, 4, "ExpressionStatement"],
                 [409, 2, 0, "ExpressionStatement"],
                 [410, 2, 4, "ExpressionStatement"],
-                [415, 6, 2, "ExpressionStatement"],
-                [416, 6, 0, "ExpressionStatement"],
-                [417, 6, 4, "ExpressionStatement"],
-                [418, 4, 0, "BlockStatement"],
+                [416, 2, 0, "ExpressionStatement"],
+                [417, 2, 4, "ExpressionStatement"],
                 [422, 2, 4, "ExpressionStatement"],
                 [423, 2, 0, "ExpressionStatement"],
                 [427, 2, 6, "ExpressionStatement"],
@@ -1000,9 +1098,6 @@ ruleTester.run("indent", rule, {
                 [434, 0, 4, "BlockStatement"],
                 [437, 2, 0, "ExpressionStatement"],
                 [438, 0, 4, "BlockStatement"],
-                [442, 4, 2, "ExpressionStatement"],
-                [443, 4, 2, "ExpressionStatement"],
-                [444, 2, 0, "BlockStatement"],
                 [451, 2, 0, "ExpressionStatement"],
                 [453, 2, 4, "ExpressionStatement"],
                 [499, 6, 8, "BlockStatement"],

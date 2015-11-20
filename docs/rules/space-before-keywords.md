@@ -1,6 +1,16 @@
 # Require or disallow spaces before keywords (space-before-keywords)
 
-Some styleguides require or disallow spaces preceding certain keywords.
+Keywords are syntax elements of JavaScript, such as `function` and `if`. These identifiers have special meaning to the language and so often appear in a different color in code editors. As an important part of the language, style guides often refer to the spacing that should be used around keywords. For example, you might have a style guide that says keywords should be always be preceeded by spaces, which would mean `if-else` statements must look like this:
+
+```js
+if (foo) {
+    // ...
+} else {
+    // ...
+}
+```
+
+Of course, you could also have a style guide that disallows spaces before keywords.
 
 **Fixable:** This rule is automatically fixable using the `--fix` flag on the command line.
 
@@ -8,11 +18,11 @@ Some styleguides require or disallow spaces preceding certain keywords.
 
 This rule will enforce consistency of spacing before the keywords `if`, `else`, `for`,
 `while`, `do`, `switch`, `throw`, `try`, `catch`, `finally`, `with`, `break`, `continue`,
-`return`, `function`, `yield`, `class`, `super` and variable declarations (`let`, `const`, `var`)
+`return`, `function`, `yield`, `class` and variable declarations (`let`, `const`, `var`)
 and label statements.
 
 This rule takes one argument: `"always"` or `"never"`. If `"always"` then the keywords
-must be followed by at least one space. If `"never"` then no spaces will be allowed before
+must be preceded by at least one space. If `"never"` then no spaces will be allowed before
 the keywords `else`, `while` (do...while), `finally` and `catch`. The default value is `"always"`.
 
 This rule will allow keywords to be preceded by an opening curly brace (`{`). If you wish to alter
@@ -57,6 +67,7 @@ The following patterns are considered errors when configured `"always"`:
 
 ```js
 /*eslint space-before-keywords: [2, "always"]*/
+/*eslint-env es6*/
 
 if (foo) {
     // ...
@@ -75,6 +86,7 @@ The following patterns are not considered errors when configured `"always"`:
 
 ```js
 /*eslint space-before-keywords: [2, "always"]*/
+/*eslint-env es6*/
 
 if (foo) {
     // ...
