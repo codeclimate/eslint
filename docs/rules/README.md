@@ -1,6 +1,6 @@
 # Rules
 
-Rules in ESLint are divided into several categories to help you better understand their value. Though none are enabled by default, you can turn on rules that ESLint recommends by specifying your configuration to inherit from `eslint:recommended`. The rules that will be enabled when you inherit from `eslint:recommended` are indicated below as "(recommended)". For more information on how to configure rules and inherit from `eslint:recommended`, please see the [configuration documentation](../user-guide/configuring.md).
+Rules in ESLint are divided into several categories to help you better understand their value. All rules are disabled by default. ESLint recommends some rules to catch common problems, and you can use these recommended rules by including `extends: "eslint:recommended"` in your configuration file. The rules that will be enabled when you inherit from `eslint:recommended` are indicated below as "(recommended)". For more information on how to configure rules and use `extends`, please see the [configuration documentation](../user-guide/configuring.md).
 
 Some rules are fixable using the `--fix` command line flag. Those rules are marked as "(fixable)" below.
 
@@ -133,6 +133,7 @@ These rules are specific to JavaScript running on Node.js or using CommonJS in t
 * [no-new-require](no-new-require.md) - disallow use of `new` operator with the `require` function
 * [no-path-concat](no-path-concat.md) - disallow string concatenation with `__dirname` and `__filename`
 * [no-process-exit](no-process-exit.md) - disallow `process.exit()`
+* [no-restricted-imports](no-restricted-imports.md) - restrict usage of specified node imports
 * [no-restricted-modules](no-restricted-modules.md) - restrict usage of specified node modules
 * [no-sync](no-sync.md) - disallow use of synchronous methods
 
@@ -158,11 +159,16 @@ These rules are purely matters of style and are quite subjective.
 * [key-spacing](key-spacing.md) - enforce spacing between keys and values in object literal properties
 * [linebreak-style](linebreak-style.md) - disallow mixed 'LF' and 'CRLF' as linebreaks
 * [lines-around-comment](lines-around-comment.md) - enforce empty lines around comments
+* [max-depth](max-depth.md) - specify the maximum depth that blocks can be nested
+* [max-len](max-len.md) - specify the maximum length of a line in your program
 * [max-nested-callbacks](max-nested-callbacks.md) - specify the maximum depth callbacks can be nested
+* [max-params](max-params.md) - limits the number of parameters that can be used in the function declaration.
+* [max-statements](max-statements.md) - specify the maximum number of statement allowed in a function
 * [new-cap](new-cap.md) - require a capital letter for constructors
 * [new-parens](new-parens.md) - disallow the omission of parentheses when invoking a constructor with no arguments
 * [newline-after-var](newline-after-var.md) - require or disallow an empty newline after variable declarations
 * [no-array-constructor](no-array-constructor.md) - disallow use of the `Array` constructor
+* [no-bitwise](no-bitwise.md) - disallow use of bitwise operators
 * [no-continue](no-continue.md) - disallow use of the `continue` statement
 * [no-inline-comments](no-inline-comments.md) - disallow comments inline after code
 * [no-lonely-if](no-lonely-if.md) - disallow `if` as the only statement in an `else` block
@@ -171,6 +177,7 @@ These rules are purely matters of style and are quite subjective.
 * [no-negated-condition](no-negated-condition.md) - disallow negated conditions
 * [no-nested-ternary](no-nested-ternary.md) - disallow nested ternary expressions
 * [no-new-object](no-new-object.md) - disallow the use of the `Object` constructor
+* [no-plusplus](no-plusplus.md) - disallow use of unary operators, `++` and `--`
 * [no-restricted-syntax](no-restricted-syntax.md) - disallow use of certain syntax in code
 * [no-spaced-func](no-spaced-func.md) - disallow space between function identifier and application (fixable)
 * [no-ternary](no-ternary.md) - disallow the use of ternary operators
@@ -218,20 +225,12 @@ These rules are only relevant to ES6 environments.
 * [prefer-arrow-callback](prefer-arrow-callback.md) - suggest using arrow functions as callbacks
 * [prefer-const](prefer-const.md) - suggest using `const` declaration for variables that are never modified after declared
 * [prefer-reflect](prefer-reflect.md) - suggest using Reflect methods where applicable
+* [prefer-rest-params](prefer-rest-params.md) - suggest using the rest parameters instead of `arguments`
 * [prefer-spread](prefer-spread.md) - suggest using the spread operator instead of `.apply()`.
 * [prefer-template](prefer-template.md) - suggest using template literals instead of strings concatenation
 * [require-yield](require-yield.md) - disallow generator functions that do not have `yield`
+* [yield-star-spacing](yield-star-spacing.md) - enforce spacing around the `*` in `yield*` expressions (fixable)
 
-## Legacy
-
-The following rules are included for compatibility with [JSHint](http://jshint.com/) and [JSLint](http://jslint.com/). While the names of the rules may not match up with the JSHint/JSLint counterpart, the functionality is the same.
-
-* [max-depth](max-depth.md) - specify the maximum depth that blocks can be nested
-* [max-len](max-len.md) - specify the maximum length of a line in your program
-* [max-params](max-params.md) - limits the number of parameters that can be used in the function declaration.
-* [max-statements](max-statements.md) - specify the maximum number of statement allowed in a function
-* [no-bitwise](no-bitwise.md) - disallow use of bitwise operators
-* [no-plusplus](no-plusplus.md) - disallow use of unary operators, `++` and `--`
 
 ## Removed
 

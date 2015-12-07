@@ -50,6 +50,7 @@ ruleTester.run("space-before-keywords", rule, {
         { code: "; if ('') {}", options: never },
         { code: ";\nif ('') {}", options: never },
         { code: "if ('') {}else {}", options: never },
+        { code: "if(true) foo();\nelse bar();", options: never },
         // ForStatement
         { code: "; for (;;) {}" },
         { code: ";\nfor (;;) {}" },
@@ -132,6 +133,7 @@ ruleTester.run("space-before-keywords", rule, {
         { code: "; function foo () {}", options: never },
         { code: ";\nfunction foo () {}", options: never },
         // FunctionExpression
+        { code: "[function () {}]" },
         { code: "var foo = function bar () {}" },
         { code: "var foo =\nfunction bar () {}" },
         { code: "function foo () { return function () {} }" },

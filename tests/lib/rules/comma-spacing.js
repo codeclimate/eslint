@@ -21,7 +21,12 @@ var ruleTester = new RuleTester();
 ruleTester.run("comma-spacing", rule, {
     valid: [
         "myfunc(404, true/* bla bla bla */, 'hello');",
+        "myfunc(404, true /* bla bla bla */, 'hello');",
         "myfunc(404, true/* bla bla bla *//* hi */, 'hello');",
+        "myfunc(404, true/* bla bla bla */ /* hi */, 'hello');",
+        "myfunc(404, true, /* bla bla bla */ 'hello');",
+        "myfunc(404, // comment\n true, /* bla bla bla */ 'hello');",
+        {code: "myfunc(404, // comment\n true,/* bla bla bla */ 'hello');", options: [{before: false, after: false}]},
         "var a = 1, b = 2;",
         "var arr = [, ];",
         "var arr = [1, ];",
@@ -61,7 +66,7 @@ ruleTester.run("comma-spacing", rule, {
         {code: "`${[1, 2]}`", ecmaFeatures: {templateStrings: true}},
         "foo(/,/, 'a')",
         "var x = ',,,,,';",
-        "var code = 'var foo = 1, bar = 3;',",
+        "var code = 'var foo = 1, bar = 3;'",
         "['apples', \n 'oranges'];",
         "{x: 'var x,y,z'}",
         {code: "var obj = {'foo':\n'bar' ,'baz':\n'qur'};", options: [{before: true, after: false}]},
@@ -456,11 +461,21 @@ ruleTester.run("comma-spacing", rule, {
             ]
         },
         {
-            code: "myfunc(404, true/* bla bla bla */ /* hi */, 'hello');",
-            output: "myfunc(404, true/* bla bla bla *//* hi */, 'hello');",
+            code: "myfunc(404, true,/* bla bla bla */ 'hello');",
+            output: "myfunc(404, true, /* bla bla bla */ 'hello');",
             errors: [
                 {
-                    message: "There should be no space before ','.",
+                    message: "A space is required after ','.",
+                    type: "Punctuator"
+                }
+            ]
+        },
+        {
+            code: "myfunc(404,// comment\n true, 'hello');",
+            output: "myfunc(404, // comment\n true, 'hello');",
+            errors: [
+                {
+                    message: "A space is required after ','.",
                     type: "Punctuator"
                 }
             ]
