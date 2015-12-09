@@ -19,18 +19,18 @@ var bar = (function() {
 
 This rule will raise a warning when it encounters a function expression wrapped in parentheses with no following invoking parentheses.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-var a = (function() {...});
+var a = (function() {/*...*/});
 ```
 
-The following patterns are considered okay and do not cause warnings:
+The following patterns are not considered problems:
 
 ```js
-var a = function() {...};
+var a = function() {/*...*/};
 
-(function() {...})();
+(function() {/*...*/})();
 ```
 
 ## Further Reading

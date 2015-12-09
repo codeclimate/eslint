@@ -11,8 +11,8 @@
 //------------------------------------------------------------------------------
 
 var assign = require("object-assign");
-var eslint = require("../../../lib/eslint");
-var ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-invalid-this");
+var RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Helpers
@@ -89,6 +89,13 @@ var patterns = [
     {
         code: "console.log(this); z(x => console.log(x, this));",
         ecmaFeatures: {arrowFunctions: true},
+        errors: errors,
+        valid: [NORMAL],
+        invalid: [USE_STRICT, MODULES]
+    },
+    {
+        code: "console.log(this); z(x => console.log(x, this));",
+        ecmaFeatures: {arrowFunctions: true, globalReturn: true},
         errors: errors,
         valid: [NORMAL],
         invalid: [USE_STRICT, MODULES]
@@ -484,11 +491,28 @@ var patterns = [
         errors: errors,
         valid: [NORMAL, USE_STRICT, MODULES],
         invalid: []
+    },
+
+    // https://github.com/eslint/eslint/issues/3254
+    {
+        code: "function foo() { console.log(this); z(x => console.log(x, this)); }",
+        ecmaFeatures: {arrowFunctions: true, blockBindings: true},
+        errors: errors,
+        valid: [NORMAL],
+        invalid: [USE_STRICT, MODULES]
+    },
+
+    // https://github.com/eslint/eslint/issues/3287
+    {
+        code: "function foo() { /** @this Obj*/ return function bar() { console.log(this); z(x => console.log(x, this)); }; }",
+        ecmaFeatures: {arrowFunctions: true},
+        valid: [NORMAL, USE_STRICT, MODULES],
+        invalid: []
     }
 ];
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-invalid-this", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-invalid-this", rule, {
     valid: extractPatterns(patterns, "valid"),
     invalid: extractPatterns(patterns, "invalid")
 });

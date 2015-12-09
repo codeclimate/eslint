@@ -40,34 +40,65 @@ var doSomething = function() {
 
 In this case, `doSomething()` is undefined at the time of invocation and so causes a runtime error.
 
-Due to these different behaviors, it's common to have guidelines as to which style of function should be used. There is really no correct or incorrect choice here, it's just a preference.
+Due to these different behaviors, it is common to have guidelines as to which style of function should be used. There is really no correct or incorrect choice here, it is just a preference.
 
 ## Rule Details
 
-This error is aimed at enforcing a particular type of function style throughout a JavaScript file, either declarations or expressions. You can specify which you prefer in the configuration.
+This rule is aimed at enforcing a particular type of function style throughout a JavaScript file, either declarations or expressions. You can specify which you prefer in the configuration.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-// "func-style": [2, "declaration"]
-var foo = function() {
-    // ...
-} ;
+/*eslint func-style: [2, "declaration"]*/
 
-// "func-style": [2, "expression"]
-function foo() {
+var foo = function() {  /*error Expected a function declaration.*/
+    // ...
+};
+```
+
+```js
+/*eslint func-style: [2, "expression"]*/
+
+function foo() {  /*error Expected a function expression.*/
     // ...
 }
 ```
 
-The following patterns are not considered warnings:
+```js
+/*eslint func-style: [2, "declaration"]*/
+
+var foo = () => {};  /*error Expected a function declaration.*/
+```
+
+The following patterns are not considered problems:
 
 ```js
-// both styles
+/*eslint func-style: [2, "declaration"]*/
+
+function foo() {
+    // ...
+}
+
+// Methods (functions assigned to objects) are not checked by this rule
 SomeObject.foo = function() {
     // ...
 };
 ```
+
+```js
+/*eslint func-style: [2, "expression"]*/
+
+var foo = function() {
+    // ...
+};
+```
+
+```js
+/*eslint func-style: [2, "declaration", { "allowArrowFunctions": true }]*/
+
+var foo = () => {};
+```
+
 
 ### Options
 
@@ -75,13 +106,19 @@ SomeObject.foo = function() {
 "func-style": [2, "declaration"]
 ```
 
-This reports an error (code is 2) if any function expressions are used where function declarations are expected. You can specify to use expressions instead:
+This reports an error if any function expressions are used where function declarations are expected. You can specify to use expressions instead:
 
 ```json
 "func-style": [2, "expression"]
 ```
 
 This configuration reports an error when function declarations are used instead of function expressions.
+
+```json
+"func-style": [2, "expression", { "allowArrowFunctions": true }]
+```
+
+This configuration works as expression setting works but does not check for arrow functions.
 
 ## When Not To Use It
 

@@ -9,14 +9,14 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-inline-comments"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint),
+var ruleTester = new RuleTester(),
     lineError = {
         messsage: "Unexpected comment inline with code.",
         type: "Line"
@@ -26,7 +26,7 @@ var eslintTester = new ESLintTester(eslint),
         type: "Block"
     };
 
-eslintTester.addRuleTest("lib/rules/no-inline-comments", {
+ruleTester.run("no-inline-comments", rule, {
 
     valid: [
         {
@@ -37,6 +37,12 @@ eslintTester.addRuleTest("lib/rules/no-inline-comments", {
         },
         {
             code: "// A solitary comment"
+        },
+        {
+            code: "var a = 1; // eslint-disable-line some-rule"
+        },
+        {
+            code: "var a = 1; /* eslint-disable-line some-rule */"
         }
     ],
 
@@ -51,6 +57,10 @@ eslintTester.addRuleTest("lib/rules/no-inline-comments", {
         },
         {
             code: "var a = 3; //A comment inline with code",
+            errors: [ lineError ]
+        },
+        {
+            code: "var a = 3; // someday use eslint-disable-line here",
             errors: [ lineError ]
         },
         {

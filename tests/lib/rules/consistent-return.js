@@ -8,21 +8,23 @@
 //------------------------------------------------------------------------------
 // Requirements
 //------------------------------------------------------------------------------
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/consistent-return"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/consistent-return", {
+var ruleTester = new RuleTester();
+ruleTester.run("consistent-return", rule, {
 
     valid: [
         "function foo() { return; }",
+        "function foo() { if (true) return; }",
         "function foo() { if (true) return; else return; }",
         "function foo() { if (true) return true; else return false; }",
         "f(function() { return; })",
+        "f(function() { if (true) return; })",
         "f(function() { if (true) return; else return; })",
         "f(function() { if (true) return true; else return false; })",
         "function foo() { function bar() { return true; } return; }",
@@ -95,6 +97,80 @@ eslintTester.addRuleTest("lib/rules/consistent-return", {
                 {
                     message: "Expected a return value.",
                     type: "ReturnStatement"
+                }
+            ]
+        },
+        {
+            code: "function foo() { if (a) return true; }",
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this function.",
+                    type: "FunctionDeclaration",
+                    column: 10
+                }
+            ]
+        },
+        {
+            code: "f(function foo() { if (a) return true; });",
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this function.",
+                    type: "FunctionExpression",
+                    column: 12
+                }
+            ]
+        },
+        {
+            code: "f(function() { if (a) return true; });",
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this function.",
+                    type: "FunctionExpression",
+                    column: 3
+                }
+            ]
+        },
+        {
+            code: "f(() => { if (a) return true; });",
+            ecmaFeatures: {arrowFunctions: true},
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this function.",
+                    type: "ArrowFunctionExpression",
+                    column: 6
+                }
+            ]
+        },
+        {
+            code: "var obj = {foo() { if (a) return true; }};",
+            ecmaFeatures: {objectLiteralShorthandMethods: true},
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this method.",
+                    type: "FunctionExpression",
+                    column: 12
+                }
+            ]
+        },
+        {
+            code: "class A {foo() { if (a) return true; }};",
+            ecmaFeatures: {classes: true},
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this method.",
+                    type: "FunctionExpression",
+                    column: 10
+                }
+            ]
+        },
+        {
+            code: "if (a) return true;",
+            ecmaFeatures: {globalReturn: true},
+            errors: [
+                {
+                    message: "Expected to return a value at the end of this program.",
+                    type: "Program",
+                    column: 1
                 }
             ]
         }

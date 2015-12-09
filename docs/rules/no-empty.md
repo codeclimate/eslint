@@ -14,30 +14,34 @@ Empty block statements such as this are usually an indicator of an error, or at 
 This rule is aimed at eliminating empty block statements. While not technically an error, empty block statements can be a source of confusion when reading code.
 A block will not be considered a warning if it contains a comment line.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-if (foo) {
+/*eslint no-empty: 2*/
+
+if (foo) {         /*error Empty block statement.*/
 }
 
-while (foo) {
+while (foo) {      /*error Empty block statement.*/
 }
 
-switch(foo) {
+switch(foo) {      /*error Empty switch statement.*/
 }
 
 try {
     doSomething();
-} catch(ex) {
+} catch(ex) {      /*error Empty block statement.*/
 
-} finally {
+} finally {        /*error Empty block statement.*/
 
 }
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint no-empty: 2*/
+
 if (foo) {
     // empty
 }
@@ -60,6 +64,38 @@ try {
 ```
 
 Since you must always have at least a `catch` or a `finally` block for any `try`, it is common to have empty statements when execution should continue regardless of error.
+
+### Options
+
+`methods` set to `true` will warn for empty methods. This option is set to `false` by default.
+
+```json
+{
+    "no-empty": [2, { "methods": true } ]
+}
+```
+
+The following pattern is considered a problem when `methods` is set to `true`:
+
+```js
+/*eslint no-empty: [2, { methods: true }]*/
+
+var foo = {
+    bar() {}              /*error Empty block statement.*/
+}
+```
+
+The following pattern is not considered a problem when `methods` is set to `true`:
+
+```js
+/*eslint no-empty: [2, { methods: true }]*/
+
+var foo = {
+    bar() {
+        console.log('baz');
+    }
+}
+```
 
 ## When Not To Use It
 

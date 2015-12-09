@@ -11,6 +11,7 @@ var b = ~foo.indexOf(".");
 var n = +foo;
 var n = 1 * foo;
 var s = "" + foo;
+foo += "";
 ```
 
 Those can be replaced with the following code:
@@ -21,6 +22,7 @@ var b = foo.indexOf(".") !== -1;
 var n = Number(foo);
 var n = Number(foo);
 var s = String(foo);
+foo = String(foo);
 ```
 
 ## Rule Details
@@ -45,16 +47,22 @@ This rule has three options.
 
 #### boolean
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-var b = !!foo;
-var b = ~foo.indexOf("."); // only with `indexOf`/`lastIndexOf` method calling.
+/*eslint no-implicit-coercion: 2*/
+
+var b = !!foo;             /*error use `Boolean(foo)` instead.*/
+var b = ~foo.indexOf("."); /*error use `foo.indexOf(".") !== -1` instead.*/
+// only with `indexOf`/`lastIndexOf` method calling.
+
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint no-implicit-coercion: 2*/
+
 var b = Boolean(foo);
 var b = foo.indexOf(".") !== -1;
 
@@ -63,16 +71,20 @@ var n = ~foo; // This is a just binary negating.
 
 #### number
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-var n = +foo;
-var n = 1 * foo;
+/*eslint no-implicit-coercion: 2*/
+
+var n = +foo;    /*error use `Number(foo)` instead.*/
+var n = 1 * foo; /*error use `Number(foo)` instead.*/
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint no-implicit-coercion: 2*/
+
 var b = Number(foo);
 var b = parseFloat(foo);
 var b = parseInt(foo, 10);
@@ -80,15 +92,21 @@ var b = parseInt(foo, 10);
 
 #### string
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-var n = "" + foo;
+/*eslint no-implicit-coercion: 2*/
+
+var n = "" + foo; /*error use `String(foo)` instead.*/
+
+foo += ""; /*error use `foo = String(foo)` instead.*/
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint no-implicit-coercion: 2*/
+
 var b = String(foo);
 ```
 

@@ -9,17 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/accessor-pairs"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Helpers
 //------------------------------------------------------------------------------
 
-
-var eslintTester = new ESLintTester(eslint);
-
-eslintTester.addRuleTest("lib/rules/accessor-pairs", {
+var ruleTester = new RuleTester();
+ruleTester.run("accessor-pairs", rule, {
     valid: [
         "var o = { a: 1 };",
         "var o = {\n get a() {\n return val; \n} \n};",
@@ -36,7 +34,15 @@ eslintTester.addRuleTest("lib/rules/accessor-pairs", {
             options: [{
                 setWithoutGet: false
             }]
-        }
+        },
+
+        // https://github.com/eslint/eslint/issues/3262
+        {code: "var o = {set: function() {}}"},
+        {code: "Object.defineProperties(obj, {set: {value: function() {}}});"},
+        {code: "Object.create(null, {set: {value: function() {}}});"},
+        {code: "var o = {get: function() {}}", options: [{getWithoutSet: true}]},
+        {code: "var o = {[set]: function() {}}", ecmaFeatures: {objectLiteralComputedProperties: true}},
+        {code: "var set = 'value'; Object.defineProperty(obj, 'foo', {[set]: function(value) {}});", ecmaFeatures: {objectLiteralComputedProperties: true}}
     ],
     invalid: [
         {
@@ -56,6 +62,24 @@ eslintTester.addRuleTest("lib/rules/accessor-pairs", {
         },
         {
             code: "var o = {d: 1};\n Object.defineProperty(o, 'c', \n{set: function(value) {\n val = value; \n} \n});",
+            errors: [{
+                message: "Getter is not present"
+            }]
+        },
+        {
+            code: "Reflect.defineProperty(obj, 'foo', {set: function(value) {}});",
+            errors: [{
+                message: "Getter is not present"
+            }]
+        },
+        {
+            code: "Object.defineProperties(obj, {foo: {set: function(value) {}}});",
+            errors: [{
+                message: "Getter is not present"
+            }]
+        },
+        {
+            code: "Object.create(null, {foo: {set: function(value) {}}});",
             errors: [{
                 message: "Getter is not present"
             }]

@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/computed-property-spacing"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
+var ruleTester = new RuleTester();
+ruleTester.run("computed-property-spacing", rule, {
 
     valid: [
 
@@ -80,6 +80,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
     invalid: [
         {
             code: "var foo = obj[ 1];",
+            output: "var foo = obj[ 1 ];",
             options: ["always"],
             errors: [
                 {
@@ -92,6 +93,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[1 ];",
+            output: "var foo = obj[ 1 ];",
             options: ["always"],
             errors: [
                 {
@@ -104,6 +106,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[ 1];",
+            output: "var foo = obj[1];",
             options: ["never"],
             errors: [
                 {
@@ -116,6 +119,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[1 ];",
+            output: "var foo = obj[1];",
             options: ["never"],
             errors: [
                 {
@@ -126,6 +130,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[ 1];",
+            output: "var foo = obj[ 1 ];",
             options: ["always"],
             errors: [
                 {
@@ -138,6 +143,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[1 ];",
+            output: "var foo = obj[ 1 ];",
             options: ["always"],
             errors: [
                 {
@@ -150,6 +156,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "obj[ foo ]",
+            outptu: "obj[foo]",
             options: ["never"],
             errors: [
                 {
@@ -168,6 +175,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "obj[foo ]",
+            output: "obj[foo]",
             options: ["never"],
             errors: [
                 {
@@ -180,6 +188,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "obj[ foo]",
+            output: "obj[foo]",
             options: ["never"],
             errors: [
                 {
@@ -192,6 +201,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var foo = obj[1]",
+            output: "var foo = obj[ 1 ]",
             options: ["always"],
             errors: [
                 {
@@ -212,6 +222,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         // always - objectLiteralComputedProperties
         {
             code: "var x = {[a]: b}",
+            output: "var x = {[ a ]: b}",
             options: ["always"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -231,6 +242,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var x = {[a ]: b}",
+            output: "var x = {[ a ]: b}",
             options: ["always"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -244,6 +256,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var x = {[ a]: b}",
+            output: "var x = {[ a ]: b}",
             options: ["always"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -259,6 +272,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         // never - objectLiteralComputedProperties
         {
             code: "var x = {[ a ]: b}",
+            output: "var x = {[a]: b}",
             options: ["never"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -278,6 +292,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var x = {[a ]: b}",
+            output: "var x = {[a]: b}",
             options: ["never"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -291,6 +306,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var x = {[ a]: b}",
+            output: "var x = {[a]: b}",
             options: ["never"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [
@@ -304,6 +320,7 @@ eslintTester.addRuleTest("lib/rules/computed-property-spacing", {
         },
         {
             code: "var x = {[ a\n]: b}",
+            output: "var x = {[a\n]: b}",
             options: ["never"],
             ecmaFeatures: { "objectLiteralComputedProperties": true },
             errors: [

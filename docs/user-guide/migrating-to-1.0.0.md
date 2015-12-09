@@ -18,8 +18,7 @@ This setting mimics some of the default behavior from 0.x, but not all. If you d
 
 **To address:** If you are currently using `--reset`, then you should stop passing `--reset` on the command line; no other changes are necessary. If you are not using `--reset`, then you should review your configuration to determine which rules should be on by default. You can partially restore some of the default behavior by adding the following to your configuration file:
 
-
-The `"eslint:recommended"` configuration contains many of the same default rule settings from 0.x, but not all. You should review your settings for the following rules to ensure they are still as you expect:
+The `"eslint:recommended"` configuration contains many of the same default rule settings from 0.x, but not all. These rules are no longer on by default, so you should review your settings to ensure they are still as you expect:
 
 * [no-alert](http://eslint.org/docs/rules/no-alert)
 * [no-array-constructor](http://eslint.org/docs/rules/no-array-constructor)
@@ -78,6 +77,73 @@ The `"eslint:recommended"` configuration contains many of the same default rule 
 * [strict](http://eslint.org/docs/rules/strict)
 * [yoda](http://eslint.org/docs/rules/yoda)
 
+See also: the [full diff](https://github.com/eslint/eslint/commit/e3e9dbd9876daf4bdeb4e15f8a76a9d5e6e03e39#diff-b01a5cfd9361ca9280a460fd6bb8edbbL1) where the defaults were changed.
+
+Here's a configuration file with the closest equivalent of the old defaults:
+
+```json
+{
+    "extends": "eslint:recommended",
+    "rules": {
+        "no-alert": 2,
+        "no-array-constructor": 2,
+        "no-caller": 2,
+        "no-catch-shadow": 2,
+        "no-empty-label": 2,
+        "no-eval": 2,
+        "no-extend-native": 2,
+        "no-extra-bind": 2,
+        "no-implied-eval": 2,
+        "no-iterator": 2,
+        "no-label-var": 2,
+        "no-labels": 2,
+        "no-lone-blocks": 2,
+        "no-loop-func": 2,
+        "no-multi-spaces": 2,
+        "no-multi-str": 2,
+        "no-native-reassign": 2,
+        "no-new": 2,
+        "no-new-func": 2,
+        "no-new-object": 2,
+        "no-new-wrappers": 2,
+        "no-octal-escape": 2,
+        "no-process-exit": 2,
+        "no-proto": 2,
+        "no-return-assign": 2,
+        "no-script-url": 2,
+        "no-sequences": 2,
+        "no-shadow": 2,
+        "no-shadow-restricted-names": 2,
+        "no-spaced-func": 2,
+        "no-trailing-spaces": 2,
+        "no-undef-init": 2,
+        "no-underscore-dangle": 2,
+        "no-unused-expressions": 2,
+        "no-use-before-define": 2,
+        "no-with": 2,
+        "camelcase": 2,
+        "comma-spacing": 2,
+        "consistent-return": 2,
+        "curly": [2, "all"],
+        "dot-notation": [2, { "allowKeywords": true }],
+        "eol-last": 2,
+        "no-extra-parens": [2, "functions"],
+        "eqeqeq": 2,
+        "key-spacing": [2, { "beforeColon": false, "afterColon": true }],
+        "new-cap": 2,
+        "new-parens": 2,
+        "quotes": [2, "double"],
+        "semi": 2,
+        "semi-spacing": [2, {"before": false, "after": true}],
+        "space-infix-ops": 2,
+        "space-return-throw-case": 2,
+        "space-unary-ops": [2, { "words": true, "nonwords": false }],
+        "strict": [2, "function"],
+        "yoda": [2, "never"]
+    }
+}
+```
+
 ## Removed Rules
 
 Over the past several releases, we have been deprecating rules and introducing new rules to take their place. The following is a list of the removed rules and their replacements:
@@ -87,6 +153,7 @@ Over the past several releases, we have been deprecating rules and introducing n
 * [no-comma-dangle](http://eslint.org/docs/rules/no-comma-dangle) is replaced by [comma-dangle](http://eslint.org/docs/rules/comma-dangle)
 * [no-empty-class](http://eslint.org/docs/rules/no-empty-class) is replaced by [no-empty-character-class](http://eslint.org/docs/rules/no-empty-character-class)
 * [no-extra-strict](http://eslint.org/docs/rules/no-extra-strict) is replaced by [strict](http://eslint.org/docs/rules/strict)
+* [no-reserved-keys](http://eslint.org/docs/rules/no-reserved-keys) is replaced by [quote-props](http://eslint.org/docs/rules/quote-props)
 * [no-space-before-semi](http://eslint.org/docs/rules/no-space-before-semi) is replaced by [semi-spacing](http://eslint.org/docs/rules/semi-spacing)
 * [no-wrap-func](http://eslint.org/docs/rules/no-wrap-func) is replaced by [no-extra-parens](http://eslint.org/docs/rules/no-extra-parens)
 * [space-after-function-name](http://eslint.org/docs/rules/space-after-function-name) is replaced by [space-before-function-paren](http://eslint.org/docs/rules/space-before-function-paren)
@@ -108,3 +175,35 @@ From the beginning, ESLint has reported errors using 0-based columns because tha
 In 0.x, the `cli` object was exported for use by external tools. It was later deprecated in favor of `CLIEngine`. In v1.0.0, we are no longer exporting `cli` as it should not be used by external tools. This will break existing tools that make use of it.
 
 **To address:** If you are using the exported `cli` object, switch to using `CLIEngine` instead.
+
+## Deprecating eslint-tester
+
+The `eslint-tester` module, which has long been the primary tester for ESLint rules, has now been moved into the `eslint` module. This was the result of a difficult relationship between these two modules that created circular dependencies and was causing a lot of problems in rule tests. Moving the tester into the `eslint` module fixed a lot of those issues.
+
+The replacement for `eslint-tester` is called `RuleTester`. It's a simplified version of `ESLintTester` that's designed to work with any testing framework. This object is exposed by the package.
+
+**To address:** Convert all of your rule tests to use `RuleTester`. If you have this as a test using `ESLintTester`:
+
+```js
+var eslint = require("../../../lib/eslint"),
+    ESLintTester = require("eslint-tester");
+
+var eslintTester = new ESLintTester(eslint);
+eslintTester.addRuleTest("lib/rules/your-rule", {
+    valid: [],
+    invalid: []
+});
+```
+
+Then you can change to:
+
+```js
+var rule = require("../../../lib/rules/your-rule"),
+    RuleTester = require("eslint").RuleTester;
+
+var ruleTester = new RuleTester();
+ruleTester.run("your-rule", rule, {
+    valid: [],
+    invalid: []
+});
+```

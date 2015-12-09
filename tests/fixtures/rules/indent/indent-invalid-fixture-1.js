@@ -26,7 +26,7 @@ if (a) {
     u++;
   }
 
-    for (;;) { // <-
+    for (;;) { // <- Fix this when issue #3737 gets resolved
       v++; // <-
   }
 
@@ -125,7 +125,7 @@ switch (a) {
   case 'f':
     var a = 'b';
     break;
-  case 'g': {
+  case 'g':     {
     var a = 'b';
     break;
   }
@@ -322,7 +322,7 @@ var c = {
     d;
 
 // holes in arrays indentation
-[
+x = [
  1,
  1,
  1,
@@ -332,7 +332,7 @@ var c = {
  1,
  1,
  1,
- 1,
+ 1
 ];
 
 try {
@@ -411,7 +411,7 @@ a(); // ->
 }
 
 a( "very very long multi line" +
-   "with weird indentation", function() {
+    "with weird indentation", function() {
   b();
 a(); // ->
     c(); // <-

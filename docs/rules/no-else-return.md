@@ -16,13 +16,15 @@ function foo() {
 
 This rule is aimed at highlighting an unnecessary block of code following an `if` containing a return statement. As such, it will warn when it encounters an `else` following a chain of `if`s, all of them containing a `return` statement.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
+/*eslint no-else-return: 2*/
+
 function foo() {
     if (x) {
         return y;
-    } else {
+    } else {            /*error Unexpected 'else' after 'return'.*/
         return z;
     }
 }
@@ -32,7 +34,7 @@ function foo() {
         return y;
     } else if (z) {
         return w;
-    } else {
+    } else {            /*error Unexpected 'else' after 'return'.*/
         return t;
     }
 }
@@ -40,7 +42,7 @@ function foo() {
 function foo() {
     if (x) {
         return y;
-    } else {
+    } else {            /*error Unexpected 'else' after 'return'.*/
         var t = "foo";
     }
 
@@ -52,18 +54,20 @@ function foo() {
     if (x) {
         if (y) {
             return y;
-        } else {
+        } else {        /*error Unexpected 'else' after 'return'.*/
             return x;
         }
-    } else {
+    } else {            /*error Unexpected 'else' after 'return'.*/
         return z;
     }
 }
 ```
 
-The follow patterns are not considered warnings:
+The follow patterns are not considered problems:
 
 ```js
+/*eslint no-else-return: 2*/
+
 function foo() {
     if (x) {
         return y;

@@ -10,20 +10,21 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-dupe-args"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-dupe-args", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-dupe-args", rule, {
     valid: [
         "function a(a, b, c){}",
         "var a = function(a, b, c){}",
         { code: "function a({a, b}, {c, d}){}", ecmaFeatures: { destructuring: true } },
-        { code: "function a([ , a]) {}", ecmaFeatures: { destructuring: true } }
+        { code: "function a([ , a]) {}", ecmaFeatures: { destructuring: true } },
+        { code: "function foo([[a, b], [c, d]]) {}", ecmaFeatures: { destructuring: true } }
     ],
     invalid: [
         { code: "function a(a, b, b) {}", errors: [{ message: "Duplicate param 'b'." }] },

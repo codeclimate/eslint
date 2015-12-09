@@ -9,17 +9,32 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-catch-shadow"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-catch-shadow", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-catch-shadow", rule, {
     valid: [
-        "var foo = 1; try { bar(); } catch(baz) { }"
+        "var foo = 1; try { bar(); } catch(baz) { }",
+        {
+            code: [
+                "'use strict';",
+                "",
+                "function broken() {",
+                "  try {",
+                "    throw new Error();",
+                "  } catch (e) {",
+                "    //",
+                "  }",
+                "}",
+                "",
+                "module.exports = broken;"
+            ].join("\n"), ecmaFeatures: {blockBindings: true}
+        }
     ],
     invalid: [
         { code: "var foo = 1; try { bar(); } catch(foo) { }", errors: [{ message: "Value of 'foo' may be overwritten in IE 8 and earlier.", type: "CatchClause"}] },

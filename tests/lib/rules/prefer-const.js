@@ -10,19 +10,19 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/prefer-const"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/prefer-const", {
+var ruleTester = new RuleTester();
+ruleTester.run("prefer-const", rule, {
     valid: [
         { code: "var x = 0;" },
         { code: "let x;", ecmaFeatures: {blockBindings: true} },
-        { code: "let x; x = 0;", ecmaFeatures: {blockBindings: true} },
+        { code: "let x; { x = 0; } foo(x);", ecmaFeatures: {blockBindings: true} },
         { code: "let x = 0; x = 1;", ecmaFeatures: {blockBindings: true} },
         { code: "const x = 0;", ecmaFeatures: {blockBindings: true} },
         { code: "for (let i = 0, end = 10; i < end; ++i) {}", ecmaFeatures: {blockBindings: true} },
@@ -30,7 +30,7 @@ eslintTester.addRuleTest("lib/rules/prefer-const", {
         { code: "for (let x of [1,2,3]) { x = 0; }", ecmaFeatures: {blockBindings: true, forOf: true} },
         { code: "(function() { var x = 0; })();" },
         { code: "(function() { let x; })();", ecmaFeatures: {blockBindings: true} },
-        { code: "(function() { let x; x = 0; })();", ecmaFeatures: {blockBindings: true} },
+        { code: "(function() { let x; { x = 0; } foo(x); })();", ecmaFeatures: {blockBindings: true} },
         { code: "(function() { let x = 0; x = 1; })();", ecmaFeatures: {blockBindings: true} },
         { code: "(function() { const x = 0; })();", ecmaFeatures: {blockBindings: true} },
         { code: "(function() { for (let i = 0, end = 10; i < end; ++i) {} })();", ecmaFeatures: {blockBindings: true} },
@@ -106,6 +106,27 @@ eslintTester.addRuleTest("lib/rules/prefer-const", {
                 { message: "`i` is never modified, use `const` instead.", type: "Identifier"},
                 { message: "`x` is never modified, use `const` instead.", type: "Identifier"}
             ]
+        },
+
+        {
+            code: "let x; x = 0;",
+            ecmaFeatures: {blockBindings: true},
+            errors: [{ message: "`x` is never modified, use `const` instead.", type: "Identifier"}]
+        },
+        {
+            code: "(function() { let x; x = 1; })();",
+            ecmaFeatures: {blockBindings: true},
+            errors: [{ message: "`x` is never modified, use `const` instead.", type: "Identifier"}]
+        },
+        {
+            code: "let x; { x = 0; foo(x); }",
+            ecmaFeatures: {blockBindings: true},
+            errors: [{ message: "`x` is never modified, use `const` instead.", type: "Identifier"}]
+        },
+        {
+            code: "(function() { let x; { x = 0; foo(x); } })();",
+            ecmaFeatures: {blockBindings: true},
+            errors: [{ message: "`x` is never modified, use `const` instead.", type: "Identifier"}]
         }
     ]
 });

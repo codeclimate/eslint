@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-undef"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-undef", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-undef", rule, {
     valid: [
         "var a = 1, b = 2; a;",
         "/*global b*/ function f() { b; }",
@@ -52,25 +52,42 @@ eslintTester.addRuleTest("lib/rules/no-undef", {
         { code: "var a; [a] = [0];", ecmaFeatures: {destructuring: true} },
         { code: "var a; ({a}) = {};", ecmaFeatures: {destructuring: true} },
         { code: "var a; ({b: a}) = {};", ecmaFeatures: {destructuring: true} },
-        { code: "var obj; [obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true} }
+        { code: "var obj; [obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true} },
+
+        // Notifications of readonly are removed: https://github.com/eslint/eslint/issues/4504
+        { code: "/*global b:false*/ function f() { b = 1; }" },
+        { code: "function f() { b = 1; }", global: { b: false } },
+        { code: "/*global b:false*/ function f() { b++; }" },
+        { code: "/*global b*/ b = 1;" },
+        { code: "/*global b:false*/ var b = 1;" },
+        { code: "Array = 1;" },
+
+        // Experimental,
+        {
+            code: "var {bacon, ...others} = stuff; foo(others)",
+            ecmaFeatures: {destructuring: true, experimentalObjectRestSpread: true},
+            globals: {stuff: false, foo: false}
+        }
     ],
     invalid: [
         { code: "a = 1;", errors: [{ message: "\"a\" is not defined.", type: "Identifier"}] },
+        { code: "if (typeof anUndefinedVar === 'string') {}", options: [{typeof: true}], errors: [{ message: "\"anUndefinedVar\" is not defined.", type: "Identifier"}] },
         { code: "var a = b;", errors: [{ message: "\"b\" is not defined.", type: "Identifier"}] },
         { code: "function f() { b; }", errors: [{ message: "\"b\" is not defined.", type: "Identifier"}] },
-        { code: "/*global b:false*/ function f() { b = 1; }", errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
-        { code: "function f() { b = 1; }", global: { b: false }, errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
-        { code: "/*global b:false*/ function f() { b++; }", errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
-        { code: "/*global b*/ b = 1;", errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
-        { code: "/*global b:false*/ var b = 1;", errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
         { code: "window;", errors: [{ message: "\"window\" is not defined.", type: "Identifier"}] },
         { code: "require(\"a\");", errors: [{ message: "\"require\" is not defined.", type: "Identifier"}] },
-        { code: "Array = 1;", errors: [{ message: "\"Array\" is read only.", type: "Identifier"}] },
         { code: "var React; React.render(<img attr={a} />);", errors: [{ message: "\"a\" is not defined." }], ecmaFeatures: { jsx: true } },
         { code: "var React, App; React.render(<App attr={a} />);", errors: [{ message: "\"a\" is not defined." }], ecmaFeatures: { jsx: true } },
         { code: "[a] = [0];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
         { code: "({a}) = {};", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
         { code: "({b: a}) = {};", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
-        { code: "[obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"obj\" is not defined." }, { message: "\"obj\" is not defined." }] }
+        { code: "[obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"obj\" is not defined." }, { message: "\"obj\" is not defined." }] },
+
+        // Experimental
+        {
+            code: "const c = 0; const a = {...b, c};",
+            ecmaFeatures: {blockBindings: true, objectLiteralShorthandProperties: true, experimentalObjectRestSpread: true},
+            errors: [{ message: "\"b\" is not defined." }]
+        }
     ]
 });
