@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-multi-spaces"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-multi-spaces", rule, {
 
     valid: [
         "var a = 1;",
@@ -72,13 +72,14 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         "({ a:  b })",
         {
             code: "var  answer = 6 *  7;",
-            args: [2, { exceptions: { "VariableDeclaration": true, "BinaryExpression": true } }]
+            options: [{ exceptions: { "VariableDeclaration": true, "BinaryExpression": true } }]
         }
     ],
 
     invalid: [
         {
             code: "function foo(a,  b) {}",
+            output: "function foo(a, b) {}",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -86,6 +87,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var foo = (a,  b) => {}",
+            output: "var foo = (a, b) => {}",
             ecmaFeatures: { arrowFunctions: true },
             errors: [{
                 message: "Multiple spaces found before 'b'.",
@@ -94,6 +96,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var a =  1",
+            output: "var a = 1",
             errors: [{
                 message: "Multiple spaces found before '1'.",
                 type: "Numeric"
@@ -101,6 +104,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var a = 1,  b = 2;",
+            output: "var a = 1, b = 2;",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -108,6 +112,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "a <<  b",
+            output: "a << b",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -115,6 +120,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var arr = {'a': 1,  'b': 2};",
+            output: "var arr = {'a': 1, 'b': 2};",
             errors: [{
                 message: "Multiple spaces found before ''b''.",
                 type: "String"
@@ -122,6 +128,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "if (a &  b) { }",
+            output: "if (a & b) { }",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -129,6 +136,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "if ( a === 3  &&  b === 4) {}",
+            output: "if ( a === 3 && b === 4) {}",
             errors: [{
                 message: "Multiple spaces found before '&&'.",
                 type: "Punctuator"
@@ -139,6 +147,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var foo = bar === 1 ?  2:  3",
+            output: "var foo = bar === 1 ? 2: 3",
             errors: [{
                 message: "Multiple spaces found before '2'.",
                 type: "Numeric"
@@ -149,6 +158,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var a = [1,  2,  3,  4]",
+            output: "var a = [1, 2, 3, 4]",
             errors: [{
                 message: "Multiple spaces found before '2'.",
                 type: "Numeric"
@@ -162,6 +172,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var arr = [1,  2];",
+            output: "var arr = [1, 2];",
             errors: [{
                 message: "Multiple spaces found before '2'.",
                 type: "Numeric"
@@ -169,6 +180,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "[  , 1,  , 3,  ,  ]",
+            output: "[ , 1, , 3, , ]",
             errors: [{
                 message: "Multiple spaces found before ','.",
                 type: "Punctuator"
@@ -185,6 +197,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "a >>>  b",
+            output: "a >>> b",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -192,6 +205,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "a = 1,  b =  2;",
+            output: "a = 1, b = 2;",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -202,6 +216,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "(function(a,  b){})",
+            output: "(function(a, b){})",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -209,6 +224,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "function foo(a,  b){}",
+            output: "function foo(a, b){}",
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -216,6 +232,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var o = { fetch: function    () {} };",
+            output: "var o = { fetch: function () {} };",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -223,6 +240,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var o = { fetch: function    () {} };",
+            output: "var o = { fetch: function () {} };",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -230,6 +248,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "function foo      () {}",
+            output: "function foo () {}",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -237,6 +256,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "if (foo)      {}",
+            output: "if (foo) {}",
             errors: [{
                 message: "Multiple spaces found before '{'.",
                 type: "Punctuator"
@@ -244,6 +264,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "function    foo(){}",
+            output: "function foo(){}",
             errors: [{
                 message: "Multiple spaces found before 'foo'.",
                 type: "Identifier"
@@ -251,6 +272,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "if    (foo) {}",
+            output: "if (foo) {}",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -258,6 +280,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "try    {} catch(ex) {}",
+            output: "try {} catch(ex) {}",
             errors: [{
                 message: "Multiple spaces found before '{'.",
                 type: "Punctuator"
@@ -265,6 +288,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "try {} catch    (ex) {}",
+            output: "try {} catch (ex) {}",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -272,6 +296,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var o = { fetch: function    () {} };",
+            output: "var o = { fetch: function () {} };",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -279,6 +304,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "throw  error;",
+            output: "throw error;",
             errors: [{
                 message: "Multiple spaces found before 'error'.",
                 type: "Identifier"
@@ -286,6 +312,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "function foo() { return      bar; }",
+            output: "function foo() { return bar; }",
             errors: [{
                 message: "Multiple spaces found before 'bar'.",
                 type: "Identifier"
@@ -293,6 +320,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "switch   (a) {default: foo(); break;}",
+            output: "switch (a) {default: foo(); break;}",
             errors: [{
                 message: "Multiple spaces found before '('.",
                 type: "Punctuator"
@@ -300,6 +328,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var  answer = 6 *  7;",
+            output: "var answer = 6 * 7;",
             errors: [{
                 message: "Multiple spaces found before 'answer'.",
                 type: "Identifier"
@@ -310,6 +339,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "({ a:  6  * 7 })",
+            output: "({ a:  6 * 7 })",
             args: 2,
             errors: [{
                 message: "Multiple spaces found before '*'.",
@@ -318,7 +348,8 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "({ a:   b })",
-            args: [2, { exceptions: { "Property": false } }],
+            output: "({ a: b })",
+            options: [{ exceptions: { "Property": false } }],
             errors: [{
                 message: "Multiple spaces found before 'b'.",
                 type: "Identifier"
@@ -326,6 +357,7 @@ eslintTester.addRuleTest("lib/rules/no-multi-spaces", {
         },
         {
             code: "var foo = { bar: function() { return 1    + 2; } };",
+            output: "var foo = { bar: function() { return 1 + 2; } };",
             errors: [{
                 message: "Multiple spaces found before '+'.",
                 type: "Punctuator"

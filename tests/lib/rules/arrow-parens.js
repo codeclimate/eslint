@@ -9,13 +9,13 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/arrow-parens"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
-var eslintTester = new ESLintTester(eslint);
+var ruleTester = new RuleTester();
 
 var valid = [
     { code: "() => {}", ecmaFeatures: { arrowFunctions: true } },
@@ -23,10 +23,22 @@ var valid = [
     { code: "(a) => a", ecmaFeatures: { arrowFunctions: true } },
     { code: "(a) => {\n}", ecmaFeatures: { arrowFunctions: true } },
     { code: "a.then((foo) => {});", ecmaFeatures: { arrowFunctions: true } },
-    { code: "a.then((foo) => { if (true) {}; });", ecmaFeatures: { arrowFunctions: true } }
+    { code: "a.then((foo) => { if (true) {}; });", ecmaFeatures: { arrowFunctions: true } },
+
+    // as-needed
+    { code: "() => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true } },
+    { code: "a => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true } },
+    { code: "a => a", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true } },
+    { code: "([a, b]) => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true, destructuring: true } },
+    { code: "({ a, b }) => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true, destructuring: true } },
+    { code: "(a = 10) => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true, destructuring: true, defaultParams: true } },
+    { code: "(...a) => a[0]", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true, restParams: true } },
+    { code: "(a, b) => {}", options: ["as-needed"], ecmaFeatures: { arrowFunctions: true } }
+
 ];
 
 var message = message;
+var asNeededMessage = asNeededMessage;
 var type = type;
 
 var invalid = [
@@ -89,10 +101,35 @@ var invalid = [
             message: message,
             type: type
         }]
+    },
+
+    // as-needed
+    {
+        code: "(a) => a",
+        options: ["as-needed"],
+        ecmaFeatures: { arrowFunctions: true },
+        errors: [{
+            line: 1,
+            column: 1,
+            message: asNeededMessage,
+            type: type
+        }]
+    },
+    {
+        code: "(b) => b",
+        options: ["as-needed"],
+        ecmaFeatures: { arrowFunctions: true },
+        errors: [{
+            line: 1,
+            column: 1,
+            message: asNeededMessage,
+            type: type
+        }]
     }
+
 ];
 
-eslintTester.addRuleTest("lib/rules/arrow-parens", {
+ruleTester.run("arrow-parens", rule, {
     valid: valid,
     invalid: invalid
 });

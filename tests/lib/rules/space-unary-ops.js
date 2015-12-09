@@ -9,127 +9,152 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/space-unary-ops"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/space-unary-ops", {
+var ruleTester = new RuleTester();
+ruleTester.run("space-unary-ops", rule, {
 
     valid: [
         {
             code: "++this.a",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "--this.a",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "this.a++",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "this.a--",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "delete foo.bar",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "delete foo[\"bar\"]",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
 
         {
             code: "new Foo",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "new Foo()",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "new [foo][0]",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "new[foo][0]",
-            args: [1, { "words": false }]
+            options: [{ "words": false }]
         },
 
         {
             code: "typeof foo",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "typeof{foo:true}",
-            args: [1, { "words": false }]
+            options: [{ "words": false }]
         },
         {
             code: "typeof {foo:true}",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "typeof!foo",
-            args: [1, { "words": false }]
+            options: [{ "words": false }]
         },
 
         {
             code: "void 0",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "(void 0)",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "(void (0))",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
         {
             code: "void foo",
-            args: [1, { "words": true }]
+            options: [{ "words": true }]
         },
 
         {
             code: "-1",
-            args: [1, { "nonwords": false }]
+            options: [{ "nonwords": false }]
         },
         {
             code: "!foo",
-            args: [1, { "nonwords": false }]
+            options: [{ "nonwords": false }]
         },
         {
             code: "!!foo",
-            args: [1, { "nonwords": false }]
+            options: [{ "nonwords": false }]
         },
         {
             code: "foo++",
-            args: [1, { "nonwords": false }]
+            options: [{ "nonwords": false }]
         },
         {
             code: "foo ++",
-            args: [1, { "nonwords": true }]
+            options: [{ "nonwords": true }]
         },
         {
             code: "++foo",
-            args: [1, { "nonwords": false }]
+            options: [{ "nonwords": false }]
         },
         {
             code: "++ foo",
-            args: [1, { "nonwords": true }]
+            options: [{ "nonwords": true }]
+        },
+        {
+            code: "function *foo () { yield (0) }",
+            ecmaFeatures: { generators: true }
+        },
+        {
+            code: "function *foo() { yield +1 }",
+            ecmaFeatures: { generators: true }
+        },
+        {
+            code: "function *foo() { yield* 0 }",
+            ecmaFeatures: { generators: true }
+        },
+        {
+            code: "function *foo() { yield * 0 }",
+            ecmaFeatures: { generators: true }
+        },
+        {
+            code: "function *foo() { (yield)*0 }",
+            ecmaFeatures: { generators: true }
+        },
+        {
+            code: "function *foo() { (yield) * 0 }",
+            ecmaFeatures: { generators: true }
         }
     ],
 
     invalid: [
         {
             code: "delete(foo.bar)",
-            args: [1, { "words": true }],
+            output: "delete (foo.bar)",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"delete\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -137,7 +162,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "delete(foo[\"bar\"]);",
-            args: [1, { "words": true }],
+            output: "delete (foo[\"bar\"]);",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"delete\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -145,7 +171,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "new(Foo)",
-            args: [1, { "words": true }],
+            output: "new (Foo)",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"new\" must be followed by whitespace.",
                 type: "NewExpression"
@@ -153,7 +180,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "new(Foo())",
-            args: [1, { "words": true }],
+            output: "new (Foo())",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"new\" must be followed by whitespace.",
                 type: "NewExpression"
@@ -162,7 +190,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
 
         {
             code: "typeof(foo)",
-            args: [1, { "words": true }],
+            output: "typeof (foo)",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"typeof\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -170,7 +199,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "typeof{foo:true}",
-            args: [1, { "words": true }],
+            output: "typeof {foo:true}",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"typeof\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -178,7 +208,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "typeof {foo:true}",
-            args: [1, { "words": false }],
+            output: "typeof{foo:true}",
+            options: [{ "words": false }],
             errors: [{
                 message: "Unexpected space after unary word operator \"typeof\".",
                 type: "UnaryExpression"
@@ -186,7 +217,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "typeof!foo",
-            args: [1, { "words": true }],
+            output: "typeof !foo",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"typeof\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -195,7 +227,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
 
         {
             code: "void(0);",
-            args: [1, { "words": true }],
+            output: "void (0);",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"void\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -203,7 +236,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "void(foo);",
-            args: [1, { "words": true }],
+            output: "void (foo);",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"void\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -211,7 +245,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "void{a:0};",
-            args: [1, { "words": true }],
+            output: "void {a:0};",
+            options: [{ "words": true }],
             errors: [{
                 message: "Unary word operator \"void\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -220,14 +255,16 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
 
         {
             code: "! foo",
-            args: [1, { "nonwords": false }],
+            output: "!foo",
+            options: [{ "nonwords": false }],
             errors: [{
                 message: "Unexpected space after unary operator \"!\"."
             }]
         },
         {
             code: "!foo",
-            args: [1, { "nonwords": true }],
+            output: "! foo",
+            options: [{ "nonwords": true }],
             errors: [{
                 message: "Unary operator \"!\" must be followed by whitespace."
             }]
@@ -235,22 +272,31 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
 
         {
             code: "!! foo",
-            args: [1, { "nonwords": false }],
+            output: "!!foo",
+            options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space after unary operator \"!\"."
+                message: "Unexpected space after unary operator \"!\".",
+                type: "UnaryExpression",
+                line: 1,
+                column: 2
             }]
         },
         {
             code: "!!foo",
-            args: [1, { "nonwords": true }],
+            output: "!! foo",
+            options: [{ "nonwords": true }],
             errors: [{
-                message: "Unary operator \"!\" must be followed by whitespace."
+                message: "Unary operator \"!\" must be followed by whitespace.",
+                type: "UnaryExpression",
+                line: 1,
+                column: 2
             }]
         },
 
         {
             code: "- 1",
-            args: [1, { "nonwords": false }],
+            output: "-1",
+            options: [{ "nonwords": false }],
             errors: [{
                 message: "Unexpected space after unary operator \"-\".",
                 type: "UnaryExpression"
@@ -258,7 +304,8 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
         },
         {
             code: "-1",
-            args: [1, { "nonwords": true }],
+            output: "- 1",
+            options: [{ "nonwords": true }],
             errors: [{
                 message: "Unary operator \"-\" must be followed by whitespace.",
                 type: "UnaryExpression"
@@ -267,30 +314,78 @@ eslintTester.addRuleTest("lib/rules/space-unary-ops", {
 
         {
             code: "foo++",
-            args: [1, { "nonwords": true }],
+            output: "foo ++",
+            options: [{ "nonwords": true }],
             errors: [{
                 message: "Space is required before unary expressions \"++\"."
             }]
         },
         {
             code: "foo ++",
-            args: [1, { "nonwords": false }],
+            output: "foo++",
+            options: [{ "nonwords": false }],
             errors: [{
                 message: "Unexpected space before unary operator \"++\"."
             }]
         },
         {
             code: "++ foo",
-            args: [1, { "nonwords": false }],
+            output: "++foo",
+            options: [{ "nonwords": false }],
             errors: [{
                 message: "Unexpected space after unary operator \"++\"."
             }]
         },
         {
             code: "++foo",
-            args: [1, { "nonwords": true }],
+            output: "++ foo",
+            options: [{ "nonwords": true }],
             errors: [{
                 message: "Unary operator \"++\" must be followed by whitespace."
+            }]
+        },
+        {
+            code: "function *foo() { yield(0) }",
+            output: "function *foo() { yield (0) }",
+            ecmaFeatures: { generators: true },
+            errors: [{
+                message: "Unary word operator \"yield\" must be followed by whitespace.",
+                type: "YieldExpression",
+                line: 1,
+                column: 19
+            }]
+        },
+        {
+            code: "function *foo() { yield+0 }",
+            output: "function *foo() { yield +0 }",
+            ecmaFeatures: { generators: true },
+            errors: [{
+                message: "Unary word operator \"yield\" must be followed by whitespace.",
+                type: "YieldExpression",
+                line: 1,
+                column: 19
+            }]
+        },
+        {
+            code: "function *foo() { yield*0 }",
+            output: "function *foo() { yield* 0 }",
+            ecmaFeatures: { generators: true },
+            errors: [{
+                message: "Unary word operator \"yield*\" must be followed by whitespace.",
+                type: "YieldExpression",
+                line: 1,
+                column: 19
+            }]
+        },
+        {
+            code: "function *foo() { yield *0 }",
+            output: "function *foo() { yield * 0 }",
+            ecmaFeatures: { generators: true },
+            errors: [{
+                message: "Unary word operator \"yield*\" must be followed by whitespace.",
+                type: "YieldExpression",
+                line: 1,
+                column: 19
             }]
         }
     ]

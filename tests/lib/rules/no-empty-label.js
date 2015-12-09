@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-empty-label"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-empty-label", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-empty-label", rule, {
     valid: [
         "labeled: for (var i in {}) { }",
         { code: "labeled: for (var i of {}) { }", ecmaFeatures: { forOf: true } },
@@ -27,6 +27,6 @@ eslintTester.addRuleTest("lib/rules/no-empty-label", {
         "labeled: switch(i) { case 1: break; default: break; }"
     ],
     invalid: [
-        { code: "labeled: var a = 10;", errors: [{ message: "Unexpected label labeled", type: "LabeledStatement"}] }
+        { code: "labeled: var a = 10;", errors: [{ message: "Unexpected label \"labeled\"", type: "LabeledStatement"}] }
     ]
 });

@@ -10,11 +10,11 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/init-declarations"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/init-declarations", {
+var ruleTester = new RuleTester();
+ruleTester.run("init-declarations", rule, {
     valid: [
         "var foo = null;",
         "foo = true;",
@@ -22,6 +22,9 @@ eslintTester.addRuleTest("lib/rules/init-declarations", {
         "function foo() { var foo = 0; var bar = []; }",
         "var fn = function() {};",
         "var foo = bar = 2;",
+        "for (var i = 0; i < 1; i++) {}",
+        "for (var foo in []) {}",
+        {code: "for (var foo of []) {}", ecmaFeatures: {forOf: true}},
         {
             code: "let a = true;",
             ecmaFeatures: {
@@ -112,14 +115,36 @@ eslintTester.addRuleTest("lib/rules/init-declarations", {
                 blockBindings: true
             },
             options: ["never"]
+        },
+        {
+            code: "for(var i = 0; i < 1; i++){}",
+            options: ["never", { "ignoreForLoopInit": true }]
+        },
+        {
+            code: "for (var foo in []) {}",
+            options: ["never", { "ignoreForLoopInit": true }]
+        },
+        {
+            code: "for (var foo of []) {}",
+            ecmaFeatures: {
+                forOf: true
+            },
+            options: ["never", { "ignoreForLoopInit": true }]
         }
     ],
     invalid: [
         {
             code: "var foo;",
-            ecmaFeatures: {
-                blockBindings: true
-            },
+            options: ["always"],
+            errors: [
+                {
+                    message: "Variable 'foo' should be initialized on declaration.",
+                    type: "VariableDeclarator"
+                }
+            ]
+        },
+        {
+            code: "for (var a in []) var foo;",
             options: ["always"],
             errors: [
                 {
@@ -305,6 +330,39 @@ eslintTester.addRuleTest("lib/rules/init-declarations", {
             errors: [
                 {
                     message: "Variable 'c' should not be initialized on declaration.",
+                    type: "VariableDeclarator"
+                }
+            ]
+        },
+        {
+            code: "for(var i = 0; i < 1; i++){}",
+            options: ["never"],
+            errors: [
+                {
+                    message: "Variable 'i' should not be initialized on declaration.",
+                    type: "VariableDeclarator"
+                }
+            ]
+        },
+        {
+            code: "for (var foo in []) {}",
+            options: ["never"],
+            errors: [
+                {
+                    message: "Variable 'foo' should not be initialized on declaration.",
+                    type: "VariableDeclarator"
+                }
+            ]
+        },
+        {
+            code: "for (var foo of []) {}",
+            ecmaFeatures: {
+                forOf: true
+            },
+            options: ["never"],
+            errors: [
+                {
+                    message: "Variable 'foo' should not be initialized on declaration.",
                     type: "VariableDeclarator"
                 }
             ]

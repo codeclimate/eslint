@@ -9,19 +9,21 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-new-func"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-new-func", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-new-func", rule, {
     valid: [
-        "var a = new _function(\"b\", \"c\", \"return b+c\");"
+        "var a = new _function(\"b\", \"c\", \"return b+c\");",
+        "var a = _function(\"b\", \"c\", \"return b+c\");"
     ],
     invalid: [
-        { code: "var a = new Function(\"b\", \"c\", \"return b+c\");", errors: [{ message: "The Function constructor is eval.", type: "NewExpression"}] }
+        { code: "var a = new Function(\"b\", \"c\", \"return b+c\");", errors: [{ message: "The Function constructor is eval.", type: "NewExpression"}] },
+        { code: "var a = Function(\"b\", \"c\", \"return b+c\");", errors: [{ message: "The Function constructor is eval.", type: "CallExpression"}] }
     ]
 });

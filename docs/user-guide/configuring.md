@@ -96,11 +96,14 @@ An environment defines global variables that are predefined. The available envir
 
 * `browser` - browser global variables.
 * `node` - Node.js global variables and Node.js scoping.
+* `commonjs` - CommonJS global variables and CommonJS scoping (use this for browser-only code that uses Browserify/WebPack).
 * `worker` - web workers global variables.
 * `amd` - defines `require()` and `define()` as global variables as per the [amd](https://github.com/amdjs/amdjs-api/wiki/AMD) spec.
 * `mocha` - adds all of the Mocha testing global variables.
 * `jasmine` - adds all of the Jasmine testing global variables for version 1.3 and 2.0.
+* `jest` - Jest global variables.
 * `phantomjs` - PhantomJS global variables.
+* `protractor` - Protractor global variables.
 * `qunit` - QUnit global variables.
 * `jquery` - jQuery global variables.
 * `prototypejs` - Prototype.js global variables.
@@ -108,7 +111,10 @@ An environment defines global variables that are predefined. The available envir
 * `meteor` - Meteor global variables.
 * `mongo` - MongoDB global variables.
 * `applescript` - AppleScript global variables.
+* `nashorn` - Java 8 Nashorn global variables.
 * `serviceworker` - Service Worker global variables.
+* `embertest` - Ember test helper globals.
+* `webextensions` - WebExtensions globals.
 * `es6` - enable all ECMAScript 6 features except for modules.
 
 These environments are not mutually exclusive, so you can define more than one at a time.
@@ -220,7 +226,7 @@ And in YAML:
     - eslint-plugin-plugin2
 ```
 
-**Note:** A globally-installed instance of ESLint can only use globally-installed ESLint plugins. A locally-installed ESLint can make sure of both locally- and globally- installed ESLint plugins.
+**Note:** A globally-installed instance of ESLint can only use globally-installed ESLint plugins. A locally-installed ESLint can make use of both locally- and globally- installed ESLint plugins.
 
 ## Configuring Rules
 
@@ -269,18 +275,48 @@ And in YAML:
       - "double"
 ```
 
-To configure a rule which is defined within a plugin you have to prefix the rule ID with the plugin name and a `/`.
-Example
+To configure a rule which is defined within a plugin you have to prefix the rule ID with the plugin name and a `/`. For example:
 
-```js
-/*eslint "jquery/dollar-sign": 2*/
+```json
+{
+    "plugins": [
+        "plugin1"
+    ],
+    "rules": {
+        "eqeqeq": 0,
+        "curly": 2,
+        "quotes": [2, "double"],
+        "plugin1/rule1": 2
+    }
+}
 ```
 
-There's no need to specify every single rule - you will automatically get the default setting for every rule. You only need to override the rules that you want to change.
+And in YAML:
 
-**Note:** All rules that are enabled by default are set to 2, so they will cause a non-zero exit code when encountered. You can lower these rule to a warning by setting them to 1, which has the effect of outputting the message onto the console but doesn't affect the exit code.
+```yaml
+---
+  plugins:
+    - plugin1
+  rules:
+    eqeqeq: 0
+    curly: 2
+    quotes:
+      - 2
+      - "double"
+    plugin1/rule1: 2
+```
 
-To temporary disable warnings in your file use the following format
+In these configuration files, the rule `plugin1/rule1` comes from the plugin named `plugin1`. You can also use this format with configuration comments, such as:
+
+```js
+/*eslint "plugin1/rule1": 2*/
+```
+
+**Note:** When specifying rules from plugins, make sure to omit `eslint-plugin-`. ESLint uses only the unprefixed name internally to locate rules.
+
+All rules that are enabled by default are set to 2, so they will cause a non-zero exit code when encountered. You can lower these rules to a warning by setting them to 1, which has the effect of outputting the message onto the console but doesn't affect the exit code.
+
+To temporary disable warnings in your file use the following format:
 
 ```js
 /*eslint-disable */
@@ -426,7 +462,14 @@ The complete configuration hierarchy, from highest precedence to lowest preceden
 
 If you want to extend a specific configuration file, you can use the `extends` property and specify the path to the file. The path can be either relative or absolute.
 
-The extended configuration provides base rules, which can be overriden by the configuration that references it. For example:
+Configurations can be extended by using:
+
+1. YAML file
+1. JSON file
+1. JS file
+1. Shareable configuration package
+
+The extended configuration provides base rules, which can be overridden by the configuration that references it. For example:
 
 ```js
 {
@@ -444,8 +487,8 @@ Configurations may also be provided as an array, with additional files overridin
 ```js
 {
     "extends": [
-        "./node_modules/coding-standard/.eslintrc-defaults",
-        // Override .eslintrc-defaults
+        "./node_modules/coding-standard/eslintDefaults.js",
+        // Override eslintDefaults.js
         "./node_modules/coding-standard/.eslintrc-es6",
         // Override .eslintrc-es6
         "./node_modules/coding-standard/.eslintrc-jsx",
@@ -535,7 +578,7 @@ You can also use your `.gitignore` file:
 
     eslint --ignore-path .gitignore file.js
 
-Any file that follows the standard ignore file format can be used. Keep in mind that specifying `--ignore-path` means that any existing `.eslintignore` file will not be used.
+Any file that follows the standard ignore file format can be used. Keep in mind that specifying `--ignore-path` means that any existing `.eslintignore` file will not be used. Note that globbing rules in .eslintignore are more strict than in .gitignore. See all supported patterns in [minimatch docs](https://github.com/isaacs/minimatch)
 
 ### Ignored File Warnings
 

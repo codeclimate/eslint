@@ -1,15 +1,17 @@
-# Suggest using of the spread operator instead of `.apply()`. (prefer-spread)
+# Suggest using the spread operator instead of `.apply()`. (prefer-spread)
 
-Up to now, we had been using `Function.prototype.apply()` callings for the variadic function.
+Before ES2015, one must use `Function.prototype.apply()` to call variadic functions.
 
 ```js
 var args = [1, 2, 3, 4];
 Math.max.apply(Math, args);
 ```
 
-Since ES2015, we can use the spread operator for the variadic function.
+In ES2015, one can use the spread operator to call variadic functions.
 
 ```js
+/*eslint-env es6*/
+
 var args = [1, 2, 3, 4];
 Math.max(...args);
 ```
@@ -18,30 +20,28 @@ Math.max(...args);
 
 This rule is aimed to flag usage of `Function.prototype.apply()` that can be replaced with the spread operator.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
-foo.apply(undefined, args);
+/*eslint prefer-spread: 2*/
+
+foo.apply(undefined, args); /*error use the spread operator instead of the ".apply()".*/
+
+foo.apply(null, args);      /*error use the spread operator instead of the ".apply()".*/
+
+obj.foo.apply(obj, args);   /*error use the spread operator instead of the ".apply()".*/
 ```
 
-```js
-foo.apply(null, args);
-```
+The following patterns are not considered problems:
 
 ```js
-obj.foo.apply(obj, args);
-```
+/*eslint prefer-spread: 2*/
 
-The following patterns are not considered warnings:
-
-```js
 // The `this` binding is different.
 foo.apply(obj, args);
 obj.foo.apply(null, args);
 obj.foo.apply(otherObj, args);
-```
 
-```js
 // The argument list is not variadic.
 // Those are warned by the `no-useless-call` rule.
 foo.apply(undefined, [1, 2, 3]);
@@ -51,14 +51,16 @@ obj.foo.apply(obj, [1, 2, 3]);
 
 Known limitations:
 
-This rule compares code statically to check whether or not `thisArg` is changed.
-So if the code about `thisArg` is a dynamic expression, this rule cannot judge correctly.
+This rule analyzes code statically to check whether or not the `this` argument is changed.
+So if the `this` argument is computed in a dynamic expression, this rule cannot detect a violation.
 
 ```js
-// This is warned.
-a[i++].foo.apply(a[i++], args);
+/*eslint prefer-spread: 2*/
 
-// This is not warned.
+// This warns.
+a[i++].foo.apply(a[i++], args); /*error use the spread operator instead of the ".apply()".*/
+
+// This does not warn.
 a[++i].foo.apply(a[i], args);
 ```
 

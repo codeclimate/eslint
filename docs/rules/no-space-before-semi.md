@@ -7,7 +7,7 @@ JavaScript allows for placing unnecessary spaces between an expression and the c
 Space issues can also cause code to look inconsistent and harder to read.
 
 ```js
-var thing = function {
+var thing = function () {
   var test = 12 ;
 }  ;
 ```
@@ -16,7 +16,7 @@ var thing = function {
 
 This rule prevents the use of spaces before a semicolon in expressions.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
 var foo = "bar" ;
@@ -29,7 +29,7 @@ var foo = function() {
 var foo = 1 + 2 ;
 ```
 
-The following patterns are not warnings:
+The following patterns are not considered problems:
 
 ```js
 ;(function(){}());

@@ -10,15 +10,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-unused-expressions"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-unused-expressions", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-unused-expressions", rule, {
     valid: [
         "function f(){}",
         "a = b",
@@ -26,6 +26,11 @@ eslintTester.addRuleTest("lib/rules/no-unused-expressions", {
         "{}",
         "f(); g()",
         "i++",
+        "a()",
+        { code: "a && a()", options: [{ allowShortCircuit: true }] },
+        { code: "a() || (b = c)", options: [{ allowShortCircuit: true }] },
+        { code: "a ? b() : c()", options: [{ allowTernary: true }] },
+        { code: "a ? b() || (c = d) : e()", options: [{ allowShortCircuit: true, allowTernary: true }] },
         "delete foo.bar",
         "void new C",
         "\"use strict\";",
@@ -46,6 +51,15 @@ eslintTester.addRuleTest("lib/rules/no-unused-expressions", {
         { code: "{0}", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
         { code: "[]", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
         { code: "a && b();", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
+        { code: "a() || false", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement" }] },
+        { code: "a || (b = c)", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement" }] },
+        { code: "a ? b() || (c = d) : e", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement" }] },
+        { code: "a && b()", options: [{ allowTernary: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement" }]},
+        { code: "a ? b() : c()", options: [{ allowShortCircuit: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement" }]},
+        { code: "a || b", options: [{ allowShortCircuit: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
+        { code: "a() && b", options: [{ allowShortCircuit: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
+        { code: "a ? b : 0", options: [{ allowTernary: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
+        { code: "a ? b : c()", options: [{ allowTernary: true }], errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
         { code: "foo.bar;", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
         { code: "!a", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },
         { code: "+a", errors: [{ message: "Expected an assignment or function call and instead saw an expression.", type: "ExpressionStatement"}] },

@@ -9,16 +9,16 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/complexity"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Helpers
 //------------------------------------------------------------------------------
 
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/complexity", {
+var ruleTester = new RuleTester();
+ruleTester.run("complexity", rule, {
     valid: [
         { code: "function a(x) {}", options: [1] },
         { code: "function a(x) {if (true) {return x;}}", options: [2] },
@@ -62,6 +62,8 @@ eslintTester.addRuleTest("lib/rules/complexity", {
         { code: "function a(x) {while(true) {'foo';}}", options: [1], errors: 1 },
         { code: "function a(x) {do {'foo';} while (true)}", options: [1], errors: 1 },
         { code: "function a(x) {(function() {while(true){'foo';}})(); (function() {while(true){'bar';}})();}", options: [1], errors: 2 },
-        { code: "function a(x) {(function() {while(true){'foo';}})(); (function() {'bar';})();}", options: [1], errors: 1 }
+        { code: "function a(x) {(function() {while(true){'foo';}})(); (function() {'bar';})();}", options: [1], errors: 1 },
+        { code: "var obj = { a(x) { return x ? 0 : 1; } };", options: [1], ecmaFeatures: { objectLiteralShorthandMethods: true }, errors: [{ message: "Function 'a' has a complexity of 2."}] },
+        { code: "var obj = { a: function b(x) { return x ? 0 : 1; } };", options: [1], errors: [{ message: "Function 'b' has a complexity of 2."}] }
     ]
 });

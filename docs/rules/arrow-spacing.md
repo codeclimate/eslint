@@ -1,8 +1,10 @@
-# Require space before/after arrow functions arrow (arrow-spacing)
+# Require space before/after arrow function's arrow (arrow-spacing)
 
-This rule normalize style of spacing before/after of arrow functions arrow(`=>`).
+This rule normalize style of spacing before/after an arrow function's arrow(`=>`).
 
 ```js
+/*eslint-env es6*/
+
 // { "before": true, "after": true }
 (a) => {}
 
@@ -10,59 +12,76 @@ This rule normalize style of spacing before/after of arrow functions arrow(`=>`)
 (a)=>{}
 ```
 
+**Fixable:** This rule is automatically fixable using the `--fix` flag on the command line.
+
 ## Rule Details
 
 This rule takes an object argument with `before` and `after` properties, each with a Boolean value.
 
-default configuration is `{ "before": true, "after": true }`.
+The default configuration is `{ "before": true, "after": true }`.
 
 `true` means there should be **one or more spaces** and `false` means **no spaces**.
 
-The following patterns are considered warnings if `{ "before": true, "after": true }`.
+The following patterns are considered problems if `{ "before": true, "after": true }`.
 
 ```js
-()=> {}
-() =>{}
-(a)=> {}
-(a) =>{}
-a =>a
-a=> a
-()=> {\n}
-() =>{\n}
+/*eslint arrow-spacing: 2*/
+/*eslint-env es6*/
+
+()=> {};     /*error Missing space before =>*/
+() =>{};     /*error Missing space after =>*/
+(a)=> {};    /*error Missing space before =>*/
+(a) =>{};    /*error Missing space after =>*/
+a =>a;       /*error Missing space after =>*/
+a=> a;       /*error Missing space before =>*/
+()=> {'\n'}; /*error Missing space before =>*/
+() =>{'\n'}; /*error Missing space after =>*/
 ```
 
-The following patterns are not warnings if `{ "before": true, "after": true }`.
+The following patterns are not considered problems if `{ "before": true, "after": true }`.
 
 ```js
-() => {}
-(a) => {}
-a => a
-() => {\n}
+/*eslint arrow-spacing: 2*/
+/*eslint-env es6*/
+
+() => {};
+(a) => {};
+a => a;
+() => {'\n'};
 ```
 
-The following patterns are not warnings if `{ "before": false, "after": false }`.
+The following patterns are not considered problems if `{ "before": false, "after": false }`.
 
 ```js
-()=>{}
-(a)=>{}
-a=>a
-()=>{\n}
+/*eslint arrow-spacing: [2, { "before": false, "after": false }]*/
+/*eslint-env es6*/
+
+()=>{};
+(a)=>{};
+a=>a;
+()=>{'\n'};
 ```
 
-The following patterns are not warnings if `{ "before": true, "after": false }`.
+The following patterns are not considered problems if `{ "before": true, "after": false }`.
 
 ```js
-() =>{}
-(a) =>{}
-a =>a
-() =>{\n}
+/*eslint arrow-spacing: [2, { "before": true, "after": false }]*/
+/*eslint-env es6*/
+
+() =>{};
+(a) =>{};
+a =>a;
+() =>{'\n'};
 ```
 
-The following patterns are not warnings if `{ "before": false, "after": true }`.
+The following patterns are not considered problems if `{ "before": false, "after": true }`.
 
 ```js
-()=> {}
-(a)=> {}
-a=> a
-()=> {\n}
+/*eslint arrow-spacing: [2, { "before": false, "after": true }]*/
+/*eslint-env es6*/
+
+()=> {};
+(a)=> {};
+a=> a;
+()=> {'\n'};
 ```

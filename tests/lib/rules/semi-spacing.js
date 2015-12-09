@@ -10,22 +10,24 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/semi-spacing"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
+var ruleTester = new RuleTester();
 
-eslintTester.addRuleTest("lib/rules/semi-spacing", {
+ruleTester.run("semi-spacing", rule, {
     valid: [
         "var a = 'b';",
         "var a = 'b ; c';",
         "var a = 'b',\nc = 'd';",
         "var a = function() {};",
         ";(function(){}());",
+        "var a = 'b'\n;(function(){}())",
+        "debugger\n;(function(){}())",
         "while (true) { break; }",
         "while (true) { continue; }",
         "debugger;",
@@ -48,7 +50,13 @@ eslintTester.addRuleTest("lib/rules/semi-spacing", {
         {
             code: "for (var i = 0 ; i < 10 ; i++) {}",
             options: [ { before: true, after: true } ]
-        }
+        },
+
+        // https://github.com/eslint/eslint/issues/3721
+        "function foo(){return 2;}",
+        "for(var i = 0; i < results.length;) {}",
+        {code: "function foo() { return 2; }", options: [{after: false}]},
+        {code: "for ( var i = 0;i < results.length; ) {}", options: [{after: false}]}
     ],
     invalid: [
         {

@@ -15,19 +15,23 @@ This particular rule aims to spot scenarios where a newline looks like it is end
 
 This rule is aimed at ensuring that two unrelated consecutive lines are not accidentially interpreted as a single expression.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
+/*eslint no-unexpected-multiline: 2*/
+
 var foo = bar
-(1 || 2).baz();
+(1 || 2).baz();               /*error Unexpected newline between function and ( of function call.*/
 
 var hello = 'world'
-[1, 2, 3].forEach(addNumber);
+[1, 2, 3].forEach(addNumber); /*error Unexpected newline between object and [ of property access.*/
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint no-unexpected-multiline: 2*/
+
 var foo = bar;
 (1 || 2).baz();
 
@@ -45,7 +49,7 @@ void [1, 2, 3].forEach(addNumber);
 
 You can turn this rule off if you are confident that you will not accidentally introduce code like this.
 
-Note that the patterns considered warnings are **not** flagged by the [semi](semi.md) rule.
+Note that the patterns considered problems are **not** flagged by the [semi](semi.md) rule.
 
 ## Related Rules
 

@@ -1,54 +1,52 @@
-# Verify `super()` callings in constructors (constructor-super)
+# Verify calls of `super()` in constructors (constructor-super)
 
 Constructors of derived classes must call `super()`.
 Constructors of non derived classes must not call `super()`.
-If not so, it will raise a runtime error.
+If this is not observed, the javascript engine will raise a runtime error.
 
-This rule checks whether or not there is valid `super()` calling.
+This rule checks whether or not there is a valid `super()` call.
 
 ## Rule Details
 
-This rule is aimed to flag invalid/missing `super()` callings.
+This rule is aimed to flag invalid/missing `super()` calls.
 
-The following patterns are considered warnings:
+The following patterns are considered problems:
 
 ```js
+/*eslint constructor-super: 2*/
+/*eslint-env es6*/
+
 class A {
     constructor() {
-        super(); // unexpected `super()`.
+        super();       /*error unexpected `super()`.*/
     }
 }
-```
 
-```js
 class A extends null {
     constructor() {
-        super(); // unexpected `super()`.
+        super();       /*error unexpected `super()`.*/
     }
 }
-```
 
-```js
 class A extends B {
-    constructor() { } // requires `super()`.
+    constructor() { }  /*error this constructor requires `super()`.*/
 }
 ```
 
-The following patterns are not considered warnings:
+The following patterns are not considered problems:
 
 ```js
+/*eslint constructor-super: 2*/
+/*eslint-env es6*/
+
 class A {
     constructor() { }
 }
-```
 
-```js
 class A extends null {
     constructor() { }
 }
-```
 
-```js
 class A extends B {
     constructor() {
         super();

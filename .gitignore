@@ -9,3 +9,6 @@ tmp/
 jsdoc/
 versions.json
 *.iml
+.eslintcache
+.cache
+**/node_modules

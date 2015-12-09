@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-extend-native"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-extend-native", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-extend-native", rule, {
     valid: [
         "x.prototype.p = 0",
         "x.prototype['p'] = 0",
@@ -25,6 +25,7 @@ eslintTester.addRuleTest("lib/rules/no-extend-native", {
         "Object.toString.bind = 0",
         "Object['toString'].bind = 0",
         "Object.defineProperty(x, 'p', {value: 0})",
+        "Object.defineProperties(x, {p: {value: 0}})",
         "global.Object.prototype.toString = 0",
         "this.Object.prototype.toString = 0",
         "with(Object) { prototype.p = 0; }",
@@ -66,14 +67,19 @@ eslintTester.addRuleTest("lib/rules/no-extend-native", {
             message: "Array prototype is read only, properties should not be added.",
             type: "CallExpression"
         }]
+    }, {
+        code: "Object.defineProperties(Array.prototype, {p: {value: 0}})",
+        errors: [{
+            message: "Array prototype is read only, properties should not be added.",
+            type: "CallExpression"
+        }]
     },
-        {
-            code: "Number['prototype']['p'] = 0",
-            options: [{exceptions: ["Object"]}],
-            errors: [{
-                message: "Number prototype is read only, properties should not be added.",
-                type: "AssignmentExpression"
-            }]
-        }
-    ]
+    {
+        code: "Number['prototype']['p'] = 0",
+        options: [{exceptions: ["Object"]}],
+        errors: [{
+            message: "Number prototype is read only, properties should not be added.",
+            type: "AssignmentExpression"
+        }]
+    }]
 });

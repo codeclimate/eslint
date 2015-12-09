@@ -9,16 +9,16 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-cond-assign"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 var ERROR_MESSAGE = "Expected a conditional expression and instead saw an assignment.";
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-cond-assign", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-cond-assign", rule, {
     valid: [
         "var x = 0; if (x == 0) { var b = 1; }",
         { code: "var x = 0; if (x == 0) { var b = 1; }", options: ["always"] },
@@ -27,14 +27,19 @@ eslintTester.addRuleTest("lib/rules/no-cond-assign", {
         "if ((someNode = someNode.parentNode) !== null) { }",
         { code: "if ((someNode = someNode.parentNode) !== null) { }", options: ["except-parens"] },
         "if ((a = b));",
+        "while ((a = b));",
+        "do {} while ((a = b));",
+        "for (;(a = b););",
         "for (;;) {}",
         "if (someNode || (someNode = parentNode)) { }",
         "while (someNode || (someNode = parentNode)) { }",
         "do { } while (someNode || (someNode = parentNode));",
-        "if ((function(node) { return (node = parentNode); })(someNode)) { }"
+        "for (;someNode || (someNode = parentNode););",
+        "if ((function(node) { return (node = parentNode); })(someNode)) { }",
+        { code: "x = 0;", options: ["always"] }
     ],
     invalid: [
-        { code: "var x; if (x = 0) { var b = 1; }", errors: [{ message: ERROR_MESSAGE, type: "IfStatement"}] },
+        { code: "var x; if (x = 0) { var b = 1; }", errors: [{ message: ERROR_MESSAGE, type: "IfStatement", line: 1, column: 12}] },
         { code: "var x; while (x = 0) { var b = 1; }", errors: [{ message: ERROR_MESSAGE, type: "WhileStatement"}] },
         { code: "var x = 0, y; do { y = x; } while (x = x + 1);", errors: [{ message: ERROR_MESSAGE, type: "DoWhileStatement"}] },
         { code: "var x; for(; x+=1 ;){};", errors: [{ message: ERROR_MESSAGE, type: "ForStatement"}] },
@@ -43,6 +48,14 @@ eslintTester.addRuleTest("lib/rules/no-cond-assign", {
         { code: "while (someNode || (someNode = parentNode)) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'while' statement.", type: "WhileStatement"}] },
         { code: "do { } while (someNode || (someNode = parentNode));", options: ["always"], errors: [{ message: "Unexpected assignment within a 'do...while' statement.", type: "DoWhileStatement"}] },
         { code: "for (; (typeof l === 'undefined' ? (l = 0) : l); i++) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'for' statement.", type: "ForStatement"}] },
-        { code: "if ((function(node) { return (node = parentNode); })(someNode)) { }", options: ["always"], errors: [{ message: "Unexpected assignment within an 'if' statement.", type: "IfStatement"}] }
+        { code: "if ((function(node) { return (node = parentNode); })(someNode)) { }", options: ["always"], errors: [{ message: "Unexpected assignment within an 'if' statement.", type: "IfStatement"}] },
+        { code: "if (x = 0) { }", options: ["always"], errors: [{ message: "Unexpected assignment within an 'if' statement.", type: "IfStatement"}] },
+        { code: "while (x = 0) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'while' statement.", type: "WhileStatement"}] },
+        { code: "do { } while (x = x + 1);", options: ["always"], errors: [{ message: "Unexpected assignment within a 'do...while' statement.", type: "DoWhileStatement"}] },
+        { code: "for(; x = y; ) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'for' statement.", type: "ForStatement"}] },
+        { code: "if ((x = 0)) { }", options: ["always"], errors: [{ message: "Unexpected assignment within an 'if' statement.", type: "IfStatement"}] },
+        { code: "while ((x = 0)) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'while' statement.", type: "WhileStatement"}] },
+        { code: "do { } while ((x = x + 1));", options: ["always"], errors: [{ message: "Unexpected assignment within a 'do...while' statement.", type: "DoWhileStatement"}] },
+        { code: "for(; (x = y); ) { }", options: ["always"], errors: [{ message: "Unexpected assignment within a 'for' statement.", type: "ForStatement"}] }
     ]
 });

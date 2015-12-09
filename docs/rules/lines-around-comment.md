@@ -33,7 +33,7 @@ var y = 10;
 
 ### Options
 
-This rule has 6 options:
+This rule has 10 options:
 
 1. `beforeBlockComment` (enabled by default)
 2. `afterBlockComment`
@@ -41,6 +41,10 @@ This rule has 6 options:
 4. `afterLineComment`
 5. `allowBlockStart`
 6. `allowBlockEnd`
+7. `allowObjectStart`
+8. `allowObjectEnd`
+9. `allowArrayStart`
+10. `allowArrayEnd`
 
 Any combination of these rules may be applied at the same time.
 
@@ -62,6 +66,8 @@ With both `beforeBlockComment` and `afterBlockComment` set to `true` the followi
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true, "afterBlockComment": true }]*/
+
 var night = "long";
 
 /* what a great and wonderful day */
@@ -72,8 +78,10 @@ var day = "great"
 This however would provide 2 warnings:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true, "afterBlockComment": true }]*/
+
 var night = "long";
-/* what a great and wonderful day */
+/* what a great and wonderful day */  /*error Expected line before comment.*/ /*error Expected line after comment.*/
 var day = "great"
 ```
 
@@ -81,6 +89,8 @@ With only `beforeBlockComment` set to `true` the following code
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true }]*/
+
 var night = "long";
 
 /* what a great and wonderful day */
@@ -90,8 +100,10 @@ var day = "great"
 But this would cause 1 warning:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true }]*/
+
 var night = "long";
-/* what a great and wonderful day */
+/* what a great and wonderful day */     /*error Expected line before comment.*/
 var day = "great"
 ```
 
@@ -103,6 +115,8 @@ With both `beforeLineComment` and `afterLineComment` set to `true` the following
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeLineComment": true, "afterLineComment": true }]*/
+
 var night = "long";
 
 // what a great and wonderful day
@@ -114,6 +128,8 @@ With only `beforeLineComment` set to `true` the following code
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeLineComment": true }]*/
+
 var night = "long";
 
 // what a great and wonderful day
@@ -130,6 +146,8 @@ With both `beforeLineComment` and `allowBlockStart` set to `true` the following 
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeLineComment": true, "allowBlockStart": true }]*/
+
 function foo(){
     // what a great and wonderful day
     var day = "great"
@@ -141,6 +159,8 @@ With both `beforeBlockComment` and `allowBlockStart` set to `true` the following
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true, "allowBlockStart": true }]*/
+
 function foo(){
     /* what a great and wonderful day */
     var day = "great"
@@ -156,6 +176,8 @@ With both `afterLineComment` and `allowBlockEnd` set to `true` the following cod
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "afterLineComment": true, "allowBlockEnd": true }]*/
+
 function foo(){
     var day = "great"
     return day;
@@ -167,13 +189,196 @@ With both `afterBlockComment` and `allowBlockEnd` set to `true` the following co
 would not warn:
 
 ```js
+/*eslint lines-around-comment: [2, { "afterBlockComment": true, "allowBlockEnd": true }]*/
+
 function foo(){
     var day = "great"
     return day;
+
     /* what a great and wonderful day */
 }
 ```
 
+#### `allowObjectStart` option
+
+When this option is set to `true`, it allows the comment to be present at the start of any object-like statement without any space above it. This option can be useful when combined with options `beforeLineComment` and `beforeBlockComment` only.
+
+With both `beforeLineComment` and `allowObjectStart` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "beforeLineComment": true, "allowObjectStart": true }]*/
+
+var foo = {
+    // what a great and wonderful day
+    day: "great"
+};
+
+const {
+    // what a great and wonderful day
+    foo: someDay
+} = {foo: "great"};
+
+const {
+    // what a great and wonderful day
+    day
+} = {day: "great"};
+```
+
+With both `beforeBlockComment` and `allowObjectStart` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true, "allowObjectStart": true }]*/
+
+var foo = {
+    /* what a great and wonderful day */
+    day: "great"
+};
+
+const {
+    /* what a great and wonderful day */
+    foo: someDay
+} = {foo: "great"};
+
+const {
+    /* what a great and wonderful day */
+    day
+} = {day: "great"};
+```
+
+#### `allowObjectEnd` option
+
+When this option is set to `true`, it allows the comment to be present at the end of any object-like statement without any space below it. This option can be useful when combined with options `afterLineComment` and `afterBlockComment` only.
+
+With both `afterLineComment` and `allowObjectEnd` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "afterLineComment": true, "allowObjectEnd": true }]*/
+
+var foo = {
+    day: "great"
+    // what a great and wonderful day
+};
+
+const {
+    foo: someDay
+    // what a great and wonderful day
+} = {foo: "great"};
+
+const {
+    day
+    // what a great and wonderful day
+} = {day: "great"};
+```
+
+With both `afterBlockComment` and `allowObjectEnd` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "afterBlockComment": true, "allowObjectEnd": true }]*/
+
+var foo = {
+    day: "great"
+
+    /* what a great and wonderful day */
+};
+
+const {
+    foo: someDay
+
+    /* what a great and wonderful day */
+} = {foo: "great"};
+
+const {
+    day
+
+    /* what a great and wonderful day */
+} = {day: "great"};
+```
+
+#### `allowArrayStart` option
+
+When this option is set to `true`, it allows the comment to be present at the start of any array-like statement without any space above it. This option can be useful when combined with options `beforeLineComment` and `beforeBlockComment` only.
+
+With both `beforeLineComment` and `allowArrayStart` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "beforeLineComment": true, "allowArrayStart": true }]*/
+
+var day = [
+    // what a great and wonderful day
+    "great",
+    "wonderful"
+];
+
+const [
+    // what a great and wonderful day
+    someDay
+] = ["great", "not great"];
+```
+
+With both `beforeBlockComment` and `allowArrayStart` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "beforeBlockComment": true, "allowArrayStart": true }]*/
+
+var day = [
+    /* what a great and wonderful day */
+    "great",
+    "wonderful"
+];
+
+const [
+    /* what a great and wonderful day */
+    someDay
+] = ["great", "not great"];
+```
+
+#### `allowArrayEnd` option
+
+When this option is set to `true`, it allows the comment to be present at the end of any array-like statement without any space below it. This option can be useful when combined with options `afterLineComment` and `afterBlockComment` only.
+
+With both `afterLineComment` and `allowArrayEnd` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "afterLineComment": true, "allowArrayEnd": true }]*/
+
+var day = [
+    "great",
+    "wonderful"
+    // what a great and wonderful day
+];
+
+const [
+    someDay
+    // what a great and wonderful day
+] = ["great", "not great"];
+```
+
+With both `afterBlockComment` and `allowArrayEnd` set to `true` the following code
+would not warn:
+
+```js
+/*eslint lines-around-comment: [2, { "afterBlockComment": true, "allowArrayEnd": true }]*/
+
+var day = [
+    "great",
+    "wonderful"
+
+    /* what a great and wonderful day */
+];
+
+const [
+    someDay
+
+    /* what a great and wonderful day */
+] = ["great", "not great"];
+```
 
 #### Inline comments
 
@@ -182,6 +387,8 @@ Inline comments are always excluded from the rule.
 The following would be acceptable:
 
 ```js
+/*eslint lines-around-comment: 2*/
+
 var x = 0;
 var y = 10; /* the vertical position */
 ```

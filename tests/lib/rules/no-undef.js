@@ -9,15 +9,15 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var eslint = require("../../../lib/eslint"),
-    ESLintTester = require("eslint-tester");
+var rule = require("../../../lib/rules/no-undef"),
+    RuleTester = require("../../../lib/testers/rule-tester");
 
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
 
-var eslintTester = new ESLintTester(eslint);
-eslintTester.addRuleTest("lib/rules/no-undef", {
+var ruleTester = new RuleTester();
+ruleTester.run("no-undef", rule, {
     valid: [
         "var a = 1, b = 2; a;",
         "/*global b*/ function f() { b; }",
@@ -56,6 +56,7 @@ eslintTester.addRuleTest("lib/rules/no-undef", {
     ],
     invalid: [
         { code: "a = 1;", errors: [{ message: "\"a\" is not defined.", type: "Identifier"}] },
+        { code: "if (typeof anUndefinedVar === 'string') {}", options: [{typeof: true}], errors: [{ message: "\"anUndefinedVar\" is not defined.", type: "Identifier"}] },
         { code: "var a = b;", errors: [{ message: "\"b\" is not defined.", type: "Identifier"}] },
         { code: "function f() { b; }", errors: [{ message: "\"b\" is not defined.", type: "Identifier"}] },
         { code: "/*global b:false*/ function f() { b = 1; }", errors: [{ message: "\"b\" is read only.", type: "Identifier"}] },
@@ -71,6 +72,13 @@ eslintTester.addRuleTest("lib/rules/no-undef", {
         { code: "[a] = [0];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
         { code: "({a}) = {};", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
         { code: "({b: a}) = {};", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"a\" is not defined." }] },
-        { code: "[obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"obj\" is not defined." }, { message: "\"obj\" is not defined." }] }
+        { code: "[obj.a, obj.b] = [0, 1];", ecmaFeatures: {destructuring: true}, errors: [{ message: "\"obj\" is not defined." }, { message: "\"obj\" is not defined." }] },
+
+        // Experimental
+        {
+            code: "const c = 0; const a = {...b, c};",
+            ecmaFeatures: {blockBindings: true, objectLiteralShorthandProperties: true, experimentalObjectRestSpread: true},
+            errors: [{ message: "\"b\" is not defined." }]
+        }
     ]
 });
