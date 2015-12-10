@@ -1,3 +1,75 @@
+v1.10.3 - December 1, 2015
+
+* Docs: Update strict rule docs (fixes #4583) (Nicholas C. Zakas)
+* Docs: Reference .eslintrc.* in contributing docs (fixes #4532) (Kai Cataldo)
+* Fix: Add for-of to `curly` rule (fixes #4571) (Kai Cataldo)
+* Fix: Ignore space before function in array start (fixes #4569) (alberto)
+
+v1.10.2 - November 27, 2015
+
+* Upgrade: escope@3.3.0 (refs #4485) (Nicholas C. Zakas)
+* Upgrade: Pinned down js-yaml to avoid breaking dep (fixes #4553) (alberto)
+* Fix: lines-around-comment with multiple comments (fixes #3509) (alberto)
+* Upgrade: doctrine@0.7.1 (fixes #4545) (Kevin Partington)
+* Fix: Bugfix for eqeqeq autofix (fixes #4540) (Kevin Partington)
+* Fix: Add for-in to `curly` rule (fixes #4436) (Kai Cataldo)
+* Fix: `valid-jsdoc` unneeded require check fix (fixes #4527) (Gyandeep Singh)
+* Fix: `brace-style` ASI fix for if-else condition (fixes #4520) (Gyandeep Singh)
+* Build: Add branch update during release process (fixes #4491) (Gyandeep Singh)
+* Build: Allow revert commits in commit messages (fixes #4452) (alberto)
+* Fix: Incorrect location in no-fallthrough (fixes #4516) (alberto)
+* Fix: `no-spaced-func` had been crashed (fixes #4508) (Toru Nagashima)
+* Fix: Add a RestProperty test of `no-undef` (fixes #3271) (Toru Nagashima)
+* Docs: Load badge from HTTPS (Brian J Brennan)
+* Build: Update eslint bot messages (fixes #4497) (Nicholas C. Zakas)
+
+v1.10.1 - November 20, 2015
+
+* Fix: Revert freezing context object (refs #4495) (Nicholas C. Zakas)
+* 1.10.0 (Nicholas C. Zakas)
+
+v1.10.0 - November 20, 2015
+
+* Docs: Remove dupes from changelog (Nicholas C. Zakas)
+* Update: --init to create extensioned files (fixes #4476) (Nicholas C. Zakas)
+* Docs: Update description of exported comment (fixes #3916) (Nicholas C. Zakas)
+* Docs: Move legacy rules to stylistic (files #4111) (Nicholas C. Zakas)
+* Docs: Clean up description of recommended rules (fixes #4365) (Nicholas C. Zakas)
+* Docs: Fix home directory config description (fixes #4398) (Nicholas C. Zakas)
+* Update: Add class support to `require-jsdoc` rule (fixes #4268) (Gyandeep Singh)
+* Update: return type error in `valid-jsdoc` rule (fixes #4443) (Gyandeep Singh)
+* Update: Display errors at the place where fix should go (fixes #4470) (nightwing)
+* Docs: Fix typo in default `cacheLocation` value (Andrew Hutchings)
+* Fix: Handle comments in block-spacing (fixes #4387) (alberto)
+* Update: Accept array for `ignorePattern` (fixes #3982) (Jesse McCarthy)
+* Update: replace label and break with IIFE and return (fixes #4459) (Ilya Panasenko)
+* Fix: space-before-keywords false positive (fixes #4449) (alberto)
+* Fix: Improves performance (refs #3530) (Toru Nagashima)
+* Fix: Autofix quotes produces invalid javascript (fixes #4380) (nightwing)
+* Docs: Update indent.md (Nathan Brown)
+* New: Disable comment config option (fixes #3901) (Matthew Riley MacPherson)
+* New: Config files with extensions (fixes #4045, fixes #4263) (Nicholas C. Zakas)
+* Revert "Update: Add JSX exceptions to no-extra-parens (fixes #4229)" (Brandon Mills)
+* Update: Add JSX exceptions to no-extra-parens (fixes #4229) (Brandon Mills)
+* Docs: Replace link to deprecated rule with newer rule (Andrew Marshall)
+* Fix: `no-extend-native` crashed at empty defineProperty (fixes #4438) (Toru Nagashima)
+* Fix: Support empty if blocks in lines-around-comment (fixes #4339) (alberto)
+* Fix: `curly` warns wrong location for `else` (fixes #4362) (Toru Nagashima)
+* Fix: `id-length` properties never option (fixes #4347) (Toru Nagashima)
+* Docs: missing close rbracket in example (@storkme)
+* Revert "Update: Allow empty arrow body (fixes #4411)" (Nicholas C. Zakas)
+* Fix: eqeqeq autofix avoids clashes with space-infix-ops (fixes #4423) (Kevin Partington)
+* Docs: Document semi-spacing behaviour (fixes #4404) (alberto)
+* Update: Allow empty arrow body (fixes #4411) (alberto)
+* Fix: Handle comments in comma-spacing (fixes #4389) (alberto)
+* Update: Refactor eslint.verify args (fixes #4395) (Nicholas C. Zakas)
+* Fix: no-undef-init should ignore const (fixes #4284) (Nicholas C. Zakas)
+* Fix: Add the missing "as-needed" docs to the radix rule (fixes #4364) (Michał Gołębiowski)
+* Fix: Display singular/plural version of "line" in message (fixes #4359) (Marius Schulz)
+* Update: Add Popular Style Guides (fixes #4320) (Jamund Ferguson)
+* Fix: eslint.report can be called w/o node if loc provided (fixes #4220) (Kevin Partington)
+* Update: no-implicit-coercion validate AssignmentExpression (fixes #4348) (Ilya Panasenko)
+
 v1.9.0 - November 6, 2015
 
 * Update: Make radix accept a "as-needed" option (fixes #4048) (Michał Gołębiowski)

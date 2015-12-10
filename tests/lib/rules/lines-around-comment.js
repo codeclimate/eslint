@@ -122,6 +122,13 @@ ruleTester.run("lines-around-comment", rule, {
             }]
         },
         {
+            code: "var foo = function(){\n// line at block start\n}",
+            options: [{
+                beforeLineComment: true,
+                allowBlockStart: true
+            }]
+        },
+        {
             code: "if(true){\n// line at block start\nvar g = 1;\n}",
             options: [{
                 beforeLineComment: true,
@@ -130,6 +137,20 @@ ruleTester.run("lines-around-comment", rule, {
         },
         {
             code: "if(true){\n\n// line at block start\nvar g = 1;\n}",
+            options: [{
+                beforeLineComment: true,
+                allowBlockStart: true
+            }]
+        },
+        {
+            code: "if(true){\n// line at block start\n}",
+            options: [{
+                beforeLineComment: true,
+                allowBlockStart: true
+            }]
+        },
+        {
+            code: "if(true){ bar(); } else {\n// line at block start\n}",
             options: [{
                 beforeLineComment: true,
                 allowBlockStart: true
@@ -701,6 +722,16 @@ ruleTester.run("lines-around-comment", rule, {
             code: "bar()\n/**\n * block block block\n */\nvar a = 1;",
             options: [{ afterBlockComment: true, beforeBlockComment: true }],
             errors: [{ message: beforeMessage, type: "Block", line: 2 }, { message: afterMessage, type: "Block", line: 2 }]
+        },
+        {
+            code: "bar()\n/* first block comment */ /* second block comment */\nvar a = 1;",
+            options: [{ afterBlockComment: true, beforeBlockComment: true }],
+            errors: [
+                { message: beforeMessage, type: "Block", line: 2 },
+                { message: afterMessage, type: "Block", line: 2 },
+                { message: beforeMessage, type: "Block", line: 2 },
+                { message: afterMessage, type: "Block", line: 2 }
+            ]
         },
         {
             code: "bar()\n/**\n * block block block\n */\nvar a = 1;",

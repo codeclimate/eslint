@@ -227,7 +227,7 @@ describe("CLIEngine", function() {
         it("should report zero messages when given a config file and a valid file", function() {
 
             engine = new CLIEngine({
-                configFile: path.join(__dirname, "..", "..", ".eslintrc")
+                configFile: path.join(__dirname, "..", "..", ".eslintrc.yml")
             });
 
             var report = engine.executeOnFiles(["lib/cli*.js"]);
@@ -239,7 +239,7 @@ describe("CLIEngine", function() {
         it("should handle multiple patterns with overlapping files", function() {
 
             engine = new CLIEngine({
-                configFile: path.join(__dirname, "..", "..", ".eslintrc")
+                configFile: path.join(__dirname, "..", "..", ".eslintrc.yml")
             });
 
             var report = engine.executeOnFiles(["lib/cli*.js", "lib/cli.?s", "lib/{cli,cli-engine}.js"]);
@@ -1854,4 +1854,60 @@ describe("CLIEngine", function() {
         });
 
     });
+
+    describe("when evaluating code with comments to change config when allowInlineConfig is disabled", function() {
+
+        it("should report a violation for disabling rules", function() {
+            var code = [
+                "alert('test'); // eslint-disable-line no-alert"
+            ].join("\n");
+            var config = {
+                envs: ["browser"],
+                ignore: true,
+                allowInlineConfig: false,
+                rules: {
+                    "eol-last": 0,
+                    "no-alert": 1,
+                    "no-trailing-spaces": 0,
+                    "strict": 0,
+                    "quotes": 0
+                }
+            };
+
+            var eslintCLI = new CLIEngine(config);
+
+            var report = eslintCLI.executeOnText(code);
+            var messages = report.results[0].messages;
+
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].ruleId, "no-alert");
+        });
+
+        it("should not report a violation by default", function() {
+            var code = [
+                "alert('test'); // eslint-disable-line no-alert"
+            ].join("\n");
+            var config = {
+                envs: ["browser"],
+                ignore: true,
+                // allowInlineConfig: true is the default
+                rules: {
+                    "eol-last": 0,
+                    "no-alert": 1,
+                    "no-trailing-spaces": 0,
+                    "strict": 0,
+                    "quotes": 0
+                }
+            };
+
+            var eslintCLI = new CLIEngine(config);
+
+            var report = eslintCLI.executeOnText(code);
+            var messages = report.results[0].messages;
+
+            assert.equal(messages.length, 0);
+        });
+
+    });
+
 });
