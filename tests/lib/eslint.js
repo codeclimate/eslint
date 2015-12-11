@@ -1,8 +1,10 @@
-/* globals window */
 /**
  * @fileoverview Tests for eslint object.
  * @author Nicholas C. Zakas
+ * @copyright 2013 Nicholas C. Zakas. All rights reserved.
+ * See LICENSE file in root directory for full license.
  */
+/* globals window */
 
 "use strict";
 
@@ -716,6 +718,46 @@ describe("eslint", function() {
                 column: 14,
                 source: ""
             });
+        });
+
+        it("should not throw an error if node is provided and location is not", function() {
+            eslint.on("Program", function(node) {
+                eslint.report("test-rule", 2, node, "hello world");
+            });
+
+            assert.doesNotThrow(function() {
+                eslint.verify("0", config, "", true);
+            });
+        });
+
+        it("should not throw an error if location is provided and node is not", function() {
+            eslint.on("Program", function() {
+                eslint.report("test-rule", 2, null, { line: 1, column: 1}, "hello world");
+            });
+
+            assert.doesNotThrow(function() {
+                eslint.verify("0", config, "", true);
+            });
+        });
+
+        it("should throw an error if neither node nor location is provided", function() {
+            eslint.on("Program", function() {
+                eslint.report("test-rule", 2, null, "hello world");
+            });
+
+            assert.throws(function() {
+                eslint.verify("0", config, "", true);
+            }, /Node must be provided when reporting error if location is not provided$/);
+        });
+
+        it("should throw an error if node is not an object", function() {
+            eslint.on("Program", function() {
+                eslint.report("test-rule", 2, "not a node", "hello world");
+            });
+
+            assert.throws(function() {
+                eslint.verify("0", config, "", true);
+            }, /Node must be an object$/);
         });
 
         it("should correctly parse a message with object keys as numbers", function() {
@@ -2245,6 +2287,168 @@ describe("eslint", function() {
         });
     });
 
+    describe("when evaluating code with comments to change config when allowInlineConfig is enabled", function() {
+
+        it("should report a violation for disabling rules", function() {
+            var code = [
+                "alert('test'); // eslint-disable-line no-alert"
+            ].join("\n");
+            var config = {
+                rules: {
+                    "no-alert": 1
+                }
+            };
+
+            var messages = eslint.verify(code, config, {
+                filename: filename,
+                allowInlineConfig: false
+            });
+
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].ruleId, "no-alert");
+        });
+
+        it("should report a violation for global variable declarations",
+        function() {
+            var code = [
+                "/* global foo */"
+            ].join("\n");
+            var config = {
+                rules: {
+                    test: 2
+                }
+            };
+            var ok = false;
+
+            eslint.defineRules({test: function(context) {
+                return {
+                    "Program": function() {
+                        var scope = context.getScope();
+                        var comments = context.getAllComments();
+                        assert.equal(1, comments.length);
+
+                        var foo = getVariable(scope, "foo");
+                        assert.notOk(foo);
+
+                        ok = true;
+                    }
+                };
+            }});
+
+            eslint.verify(code, config, {allowInlineConfig: false});
+            assert(ok);
+        });
+
+        it("should report a violation for eslint-disable", function() {
+            var code = [
+                "/* eslint-disable */",
+                "alert('test');"
+            ].join("\n");
+            var config = {
+                rules: {
+                    "no-alert": 1
+                }
+            };
+
+            var messages = eslint.verify(code, config, {
+                filename: filename,
+                allowInlineConfig: false
+            });
+
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].ruleId, "no-alert");
+        });
+
+        it("should not report a violation for rule changes", function() {
+            var code = [
+                "/*eslint no-alert:2*/",
+                "alert('test');"
+            ].join("\n");
+            var config = {
+                rules: {
+                    "no-alert": 0
+                }
+            };
+
+            var messages = eslint.verify(code, config, {
+                filename: filename,
+                allowInlineConfig: false
+            });
+
+            assert.equal(messages.length, 0);
+        });
+
+        it("should report a violation for disable-line", function() {
+            var code = [
+                "alert('test'); // eslint-disable-line"
+            ].join("\n");
+            var config = {
+                rules: {
+                    "no-alert": 2
+                }
+            };
+
+            var messages = eslint.verify(code, config, {
+                filename: filename,
+                allowInlineConfig: false
+            });
+
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].ruleId, "no-alert");
+        });
+
+        it("should report a violation for env changes", function() {
+            var code = [
+                "/*eslint-env browser*/"
+            ].join("\n");
+            var config = {
+                rules: {
+                    test: 2
+                }
+            };
+            var ok = false;
+
+            eslint.defineRules({test: function(context) {
+                return {
+                    "Program": function() {
+                        var scope = context.getScope();
+                        var comments = context.getAllComments();
+                        assert.equal(1, comments.length);
+
+                        var windowVar = getVariable(scope, "window");
+                        assert.notOk(windowVar.eslintExplicitGlobal);
+
+                        ok = true;
+                    }
+                };
+            }});
+
+            eslint.verify(code, config, {allowInlineConfig: false});
+            assert(ok);
+        });
+    });
+
+    describe("when evaluating code with comments to change config when allowInlineConfig is disabled", function() {
+
+        it("should not report a violation", function() {
+            var code = [
+                "alert('test'); // eslint-disable-line no-alert"
+            ].join("\n");
+            var config = {
+                rules: {
+                    "no-alert": 1
+                }
+            };
+
+            var messages = eslint.verify(code, config, {
+                filename: filename,
+                allowInlineConfig: true
+            });
+
+            assert.equal(messages.length, 0);
+        });
+    });
+
     describe("when evaluating code with code comments", function() {
 
         it("should emit enter only once for each comment", function() {
@@ -2295,6 +2499,48 @@ describe("eslint", function() {
     });
 
     describe("verify()", function() {
+
+        describe("filenames", function() {
+            it("should allow filename to be passed on options object", function() {
+
+                eslint.verify("foo;", {}, { filename: "foo.js"});
+                var result = eslint.getFilename();
+                assert.equal(result, "foo.js");
+            });
+
+            it("should allow filename to be passed as third argument", function() {
+
+                eslint.verify("foo;", {}, "foo.js");
+                var result = eslint.getFilename();
+                assert.equal(result, "foo.js");
+            });
+
+            it("should default filename to <input> when options object doesn't have filename", function() {
+
+                eslint.verify("foo;", {}, {});
+                var result = eslint.getFilename();
+                assert.equal(result, "<input>");
+            });
+
+            it("should default filename to <input> when only two arguments are passed", function() {
+
+                eslint.verify("foo;", {});
+                var result = eslint.getFilename();
+                assert.equal(result, "<input>");
+            });
+        });
+
+        describe("saveState", function() {
+            it("should save the state when saveState is passed as an option", function() {
+
+                var spy = sinon.spy(eslint, "reset");
+                eslint.verify("foo;", {}, { saveState: true });
+                assert.equal(spy.callCount, 0);
+            });
+
+
+        });
+
 
         it("should report warnings in order by line and column when called", function() {
 

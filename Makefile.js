@@ -182,6 +182,9 @@ function getReleaseType(version) {
 function release(type) {
     var newVersion;/* , changes;*/
 
+    exec("git checkout master && git fetch origin && git reset --hard origin/master");
+    exec("npm install && npm prune");
+
     target.test();
     echo("Generating new version");
     newVersion = execSilent("npm version " + type).trim();
@@ -944,7 +947,7 @@ target.checkGitCommit = function() {
     }
 
     // Only check non-release messages
-    if (!semver.valid(commitMsgs[0])) {
+    if (!semver.valid(commitMsgs[0]) && !/^Revert /.test(commitMsgs[0])) {
         if (commitMsgs[0].slice(0, commitMsgs[0].indexOf("\n")).length > 72) {
             echo(" - First line of commit message must not exceed 72 characters");
             failed = true;
