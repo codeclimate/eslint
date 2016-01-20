@@ -3,7 +3,7 @@
  * @author nzakas
  */
 /* global cat, cd, cp, echo, exec, exit, find, ls, mkdir, mv, pwd, rm, target, test*/
-
+/* eslint no-use-before-define: 0*/
 "use strict";
 
 //------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ var NODE = "node ", // intentional extra space
     JS_FILES = find("lib/").filter(fileType("js")).join(" "),
     JSON_FILES = find("conf/").filter(fileType("json")).join(" ") + " .eslintrc",
     MARKDOWN_FILES_ARRAY = find("docs/").concat(ls(".")).filter(fileType("md")),
-    TEST_FILES = find("tests/lib/").filter(fileType("js")).join(" "),
+    TEST_FILES = getTestFilePatterns(),
     /* eslint-enable no-use-before-define */
 
     // Regex
@@ -69,11 +69,29 @@ var NODE = "node ", // intentional extra space
     ISSUE_REGEX = /\((?:fixes|refs) #\d+(?:.*(?:fixes|refs) #\d+)*\)$/,
 
     // Settings
-    MOCHA_TIMEOUT = 4000;
+    MOCHA_TIMEOUT = 10000;
 
 //------------------------------------------------------------------------------
 // Helpers
 //------------------------------------------------------------------------------
+
+/**
+ * Generates file patterns for test files
+ * @returns {string} test file patterns
+ * @private
+ */
+function getTestFilePatterns() {
+    var testLibPath = "tests/lib/";
+
+    return ls(testLibPath).filter(function(pathToCheck) {
+        return test("-d", testLibPath + pathToCheck);
+    }).reduce(function(initialValue, currentValues) {
+        if (currentValues !== "rules") {
+            initialValue.push(testLibPath + currentValues + "/**/*.js");
+        }
+        return initialValue;
+    }, [testLibPath + "rules/**/*.js", testLibPath + "*.js"]).join(" ");
+}
 
 /**
  * Generates a function that matches files with a particular extension.
@@ -146,94 +164,186 @@ function generateBlogPost(releaseInfo) {
 /**
  * Generates a doc page with formatter result examples
  * @param  {Object} formatterInfo Linting results from each formatter
+ * @param  {string} [prereleaseVersion] The version used for a prerelease. This
+ *      changes where the output is stored.
  * @returns {void}
  */
-function generateFormatterExamples(formatterInfo) {
+function generateFormatterExamples(formatterInfo, prereleaseVersion) {
     var output = ejs.render(cat("./templates/formatter-examples.md.ejs"), formatterInfo),
         filename = "../eslint.github.io/docs/user-guide/formatters/index.md",
         htmlFilename = "../eslint.github.io/docs/user-guide/formatters/html-formatter-example.html";
+
+    if (prereleaseVersion) {
+        filename = filename.replace("/docs", "/docs/" + prereleaseVersion);
+        htmlFilename = htmlFilename.replace("/docs", "/docs/" + prereleaseVersion);
+    }
 
     output.to(filename);
     formatterInfo.formatterResults.html.result.to(htmlFilename);
 }
 
 /**
- * Given a semver version, determine the type of version.
- * @param {string} version A semver version string.
- * @returns {string} The type of version.
+ * Gets all changes since the last tag that represents a version.
+ * @returns {Object} An object containing all the changes since the last version.
  * @private
  */
-function getReleaseType(version) {
+function calculateReleaseInfo() {
 
-    if (semver.patch(version) > 0) {
-        return "patch";
-    } else if (semver.minor(version) > 0) {
-        return "minor";
+    // get most recent tag
+    var tags = getVersionTags(),
+        lastTag = tags[tags.length - 1],
+        commitFlagPattern = /([a-z]+):/i,
+        releaseInfo = {};
+
+    // get log statements
+    var logs = execSilent("git log --no-merges --pretty=format:\"* %h %s (%an)\" " + lastTag + "..HEAD").split(/\n/g);
+
+    // arrange change types into categories
+    logs.forEach(function(log) {
+        var flag = log.match(commitFlagPattern)[1].toLowerCase();
+
+        if (!releaseInfo["changelog_" + flag]) {
+            releaseInfo["changelog_" + flag] = [];
+        }
+
+        releaseInfo["changelog_" + flag].push(log);
+    });
+
+    var output = logs.join("\n"); // and join it into a string
+    releaseInfo.raw = output;
+
+    if (releaseInfo.changelog_breaking) {
+        releaseInfo.releaseType = "major";
+    } else if (releaseInfo.changelog_new || releaseInfo.changelog_update) {
+        releaseInfo.releaseType = "minor";
     } else {
-        return "major";
+        releaseInfo.releaseType = "patch";
     }
+
+    // increment version from current version
+    releaseInfo.version = "v" + semver.inc(require("./package.json").version, releaseInfo.releaseType);
+
+    return releaseInfo;
+}
+
+
+/**
+ * Outputs the changelog to disk.
+ * @param {Object} releaseInfo The information about the release.
+ * @param {string} releaseInfo.version The release version.
+ * @param {Object} releaseInfo.changelog The changelog information.
+ * @returns {void}
+ */
+function writeChangelog(releaseInfo) {
+
+    // get most recent two tags
+    var now = new Date(),
+        timestamp = dateformat(now, "mmmm d, yyyy");
+
+    // output header
+    (releaseInfo.version + " - " + timestamp + "\n").to("CHANGELOG.tmp");
+
+    // output changelog
+    ("\n" + releaseInfo.raw + "\n").toEnd("CHANGELOG.tmp");
+
+    // switch-o change-o
+    cat("CHANGELOG.tmp", "CHANGELOG.md").to("CHANGELOG.md.tmp");
+    rm("CHANGELOG.tmp");
+    rm("CHANGELOG.md");
+    mv("CHANGELOG.md.tmp", "CHANGELOG.md");
 }
 
 /**
  * Creates a release version tag and pushes to origin.
- * @param {string} type The type of release to do (patch, minor, major)
  * @returns {void}
  */
-function release(type) {
-    var newVersion;/* , changes;*/
+function release() {
 
-    exec("git checkout master && git fetch origin && git reset --hard origin/master");
+    echo("Updating dependencies");
     exec("npm install && npm prune");
 
+    echo("Running tests");
     target.test();
-    echo("Generating new version");
-    newVersion = execSilent("npm version " + type).trim();
+
+    echo("Calculating changes for release");
+    var releaseInfo = calculateReleaseInfo();
+
+    echo("Release is " + releaseInfo.version);
 
     echo("Generating changelog");
-    var releaseInfo = target.changelog();
+    writeChangelog(releaseInfo);
+    exec("git add .");
+    exec("git commit -m \"Docs: Autogenerated changelog for " + releaseInfo.version + "\"");
 
-    // add changelog to commit
-    exec("git add CHANGELOG.md");
-    exec("git commit --amend --no-edit");
-
-    // replace existing tag
-    exec("git tag -f " + newVersion);
+    echo("Generating " + releaseInfo.version);
+    execSilent("npm version " + releaseInfo.version);
 
     // push all the things
     echo("Publishing to git");
     exec("git push origin master --tags");
 
-    // now push the changelog...changes to the tag
-    // echo("Publishing changes to github release");
-    // this requires a github API token in process.env.ESLINT_GITHUB_TOKEN
-    // it will continue with an error message logged if not set
-    // ghGot("repos/eslint/eslint/releases", {
-    //     body: JSON.stringify({
-    //         tag_name: newVersion,
-    //         name: newVersion,
-    //         target_commitish: "master",
-    //         body: changes
-    //     }),
-    //     method: "POST",
-    //     json: true,
-    //     token: process.env.ESLINT_GITHUB_TOKEN
-    // }, function(pubErr) {
-    //     if (pubErr) {
-    //         echo("Warning: error when publishing changes to github release: " + pubErr.message);
-    //     }
     echo("Publishing to npm");
     getPackageInfo().files.filter(function(dirPath) {
         return fs.lstatSync(dirPath).isDirectory();
     }).forEach(nodeCLI.exec.bind(nodeCLI, "linefix"));
     exec("npm publish");
-    exec("git reset --hard");
 
     echo("Generating site");
     target.gensite();
     generateBlogPost(releaseInfo);
     target.publishsite();
-    // });
 }
+
+/**
+ * Creates a prerelease version tag and pushes to origin.
+ * @param {string} version The prerelease version to create (i.e. 2.0.0-alpha-1).
+ * @returns {void}
+ */
+function prerelease(version) {
+
+    if (!version) {
+        echo("Missing prerelease version.");
+        exit(1);
+    }
+
+    echo("Updating dependencies");
+    exec("npm install && npm prune");
+
+    echo("Running tests");
+    target.test();
+
+    echo("Calculating changes for release");
+    var releaseInfo = calculateReleaseInfo();
+
+    // override the version for prereleases
+    releaseInfo.version = version[0] === "v" ? version : "v" + version;
+    echo("Release is " + releaseInfo.version);
+
+    echo("Generating changelog");
+    writeChangelog(releaseInfo);
+    exec("git add .");
+    exec("git commit -m \"Docs: Autogenerated changelog for " + releaseInfo.version + "\"");
+
+    echo("Generating " + releaseInfo.version);
+    execSilent("npm version " + version);
+
+    // push all the things
+    echo("Publishing to git");
+    exec("git push origin master --tags");
+
+    // publish to npm
+    echo("Publishing to npm");
+    getPackageInfo().files.filter(function(dirPath) {
+        return fs.lstatSync(dirPath).isDirectory();
+    }).forEach(nodeCLI.exec.bind(nodeCLI, "linefix"));
+    exec("npm publish --tag next");
+
+    echo("Generating site");
+    target.gensite(semver.inc(version, "major"));
+    generateBlogPost(releaseInfo);
+    echo("Site has not been pushed, please update blog post and push manually.");
+}
+
 
 /**
  * Splits a command result to separate lines.
@@ -537,17 +647,25 @@ target.docs = function() {
     echo("Documentation has been output to /jsdoc");
 };
 
-target.gensite = function() {
+target.gensite = function(prereleaseVersion) {
     echo("Generating eslint.org");
 
     var docFiles = [
         "/rules/",
         "/user-guide/command-line-interface.md",
         "/user-guide/configuring.md",
+        "/developer-guide/code-path-analysis.md",
         "/developer-guide/nodejs-api.md",
         "/developer-guide/working-with-plugins.md",
         "/developer-guide/working-with-rules.md"
     ];
+
+    // append version
+    if (prereleaseVersion) {
+        docFiles = docFiles.map(function(docFile) {
+            return "/" + prereleaseVersion + docFile;
+        });
+    }
 
     // 1. create temp and build directory
     if (!test("-d", TEMP_DIR)) {
@@ -582,7 +700,7 @@ target.gensite = function() {
 
     // 4. Loop through all files in temporary directory
     find(TEMP_DIR).forEach(function(filename) {
-        if (test("-f", filename) && path.extname(filename) !== "") {
+        if (test("-f", filename) && path.extname(filename) === ".md") {
 
             var rulesUrl = "https://github.com/eslint/eslint/tree/master/lib/rules/";
             var docsUrl = "https://github.com/eslint/eslint/tree/master/docs/rules/";
@@ -642,18 +760,23 @@ target.gensite = function() {
     JSON.stringify(versions).to("./versions.json");
 
     // 10. Copy temorary directory to site's docs folder
-    cp("-rf", TEMP_DIR + "*", DOCS_DIR);
+    var outputDir = DOCS_DIR;
+    if (prereleaseVersion) {
+        outputDir += "/" + prereleaseVersion;
+    }
+    cp("-rf", TEMP_DIR + "*", outputDir);
 
     // 11. Delete temporary directory
     rm("-r", TEMP_DIR);
 
-    // 12. Browserify ESLint
-    target.browserify();
-    cp("-f", "build/eslint.js", SITE_DIR + "js/app/eslint.js");
-    cp("-f", "conf/eslint.json", SITE_DIR + "js/app/eslint.json");
+    // 12. Update demos, but only for non-prereleases
+    if (!prereleaseVersion) {
+        cp("-f", "build/eslint.js", SITE_DIR + "js/app/eslint.js");
+        cp("-f", "conf/eslint.json", SITE_DIR + "js/app/eslint.json");
+    }
 
     // 13. Create Example Formatter Output Page
-    generateFormatterExamples(getFormatterResults());
+    generateFormatterExamples(getFormatterResults(), prereleaseVersion);
 };
 
 target.publishsite = function() {
@@ -698,52 +821,6 @@ target.browserify = function() {
 
     // 8. remove temp directory
     rm("-r", TEMP_DIR);
-};
-
-target.changelog = function() {
-
-    // get most recent two tags
-    var tags = getVersionTags(),
-        rangeTags = tags.slice(tags.length - 2),
-        now = new Date(),
-        timestamp = dateformat(now, "mmmm d, yyyy"),
-        releaseInfo = {
-            releaseType: getReleaseType(rangeTags[1]),
-            version: rangeTags[1]
-        };
-
-    // output header
-    (rangeTags[1] + " - " + timestamp + "\n").to("CHANGELOG.tmp");
-
-    // get log statements
-    var logs = execSilent("git log --no-merges --pretty=format:\"* %s (%an)\" " + rangeTags.join("..")).split(/\n/g);
-    logs.shift();   // get rid of version commit
-    logs.forEach(function(log) {
-        var tag = log.substring(2, log.indexOf(":")).toLowerCase();
-
-        if (!releaseInfo["changelog_" + tag]) {
-            releaseInfo["changelog_" + tag] = [];
-        }
-
-        releaseInfo["changelog_" + tag].push(log);
-    });
-
-    var output = logs.join("\n"); // and join it into a string
-    releaseInfo.raw = output;
-
-    logs.push(""); // to create empty lines
-    logs.unshift("");
-
-    // output log statements
-    logs.join("\n").toEnd("CHANGELOG.tmp");
-
-    // switch-o change-o
-    cat("CHANGELOG.tmp", "CHANGELOG.md").to("CHANGELOG.md.tmp");
-    rm("CHANGELOG.tmp");
-    rm("CHANGELOG.md");
-    mv("CHANGELOG.md.tmp", "CHANGELOG.md");
-
-    return releaseInfo;
 };
 
 target.checkRuleFiles = function() {
@@ -1004,7 +1081,7 @@ function time(cmd, runs, runNumber, results, cb) {
         results.push(actual);
         echo("Performance Run #" + runNumber + ":  %dms", actual);
         if (runs > 1) {
-            time(cmd, runs - 1, runNumber + 1, results, cb);
+            return time(cmd, runs - 1, runNumber + 1, results, cb);
         } else {
             return cb(results);
         }
@@ -1069,4 +1146,8 @@ target.minor = function() {
 
 target.major = function() {
     release("major");
+};
+
+target.prerelease = function(args) {
+    prerelease(args[0]);
 };

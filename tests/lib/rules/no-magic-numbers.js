@@ -45,12 +45,6 @@ ruleTester.run("no-magic-numbers", rule, {
             code: "var foo = -42;"
         },
         {
-            code: "var foo = 0 + 1 + 2;"
-        },
-        {
-            code: "var foo = 0 + 1 - 2;"
-        },
-        {
             code: "var foo = 0 + 1 - 2 + -2;",
             options: [{
                 ignore: [0, 1, 2, -2]
@@ -69,7 +63,16 @@ ruleTester.run("no-magic-numbers", rule, {
             code: "var foo = { bar:10 }"
         },
         {
-            code: "setTimeout(function() {return 1;}, 0);"
+            code: "setTimeout(function() {return 1;}, 0);",
+            options: [{
+                ignore: [0, 1]
+            }]
+        },
+        {
+            code: "var data = ['foo', 'bar', 'baz']; var third = data[3];",
+            options: [{
+                ignoreArrayIndexes: true
+            }]
         }
     ],
     invalid: [
@@ -84,9 +87,19 @@ ruleTester.run("no-magic-numbers", rule, {
             }]
         },
         {
-            code: "var foo = 0 + 1 - 2 + -2;",
+            code: "var foo = 0 + 1;",
             errors: [
-                { message: "No magic number: -2"}
+                { message: "No magic number: 0"},
+                { message: "No magic number: 1"}
+            ]
+        },
+        {
+            code: "var foo = 0 + 1 + -2 + 2;",
+            errors: [
+                { message: "No magic number: 0"},
+                { message: "No magic number: 1"},
+                { message: "No magic number: -2"},
+                { message: "No magic number: 2"}
             ]
         },
         {
@@ -110,6 +123,7 @@ ruleTester.run("no-magic-numbers", rule, {
             code: "console.log(0x1A + 0x02); console.log(071);",
             errors: [
                 { message: "No magic number: 0x1A"},
+                { message: "No magic number: 0x02"},
                 { message: "No magic number: 071"}
             ]
         }, {
@@ -169,8 +183,16 @@ ruleTester.run("no-magic-numbers", rule, {
                 { message: "No magic number: 10", line: 7},
                 { message: "No magic number: 24", line: 11},
                 { message: "No magic number: 1000", line: 15},
+                { message: "No magic number: 0", line: 19},
                 { message: "No magic number: 10", line: 22}
             ]
+        },
+        {
+            code: "var data = ['foo', 'bar', 'baz']; var third = data[3];",
+            options: [{}],
+            errors: [{
+                message: "No magic number: 3", line: 1
+            }]
         }
     ]
 });

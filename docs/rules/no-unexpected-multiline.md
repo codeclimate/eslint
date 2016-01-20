@@ -13,7 +13,7 @@ This particular rule aims to spot scenarios where a newline looks like it is end
 
 ## Rule Details
 
-This rule is aimed at ensuring that two unrelated consecutive lines are not accidentially interpreted as a single expression.
+This rule is aimed at ensuring that two unrelated consecutive lines are not accidentally interpreted as a single expression.
 
 The following patterns are considered problems:
 
@@ -25,6 +25,13 @@ var foo = bar
 
 var hello = 'world'
 [1, 2, 3].forEach(addNumber); /*error Unexpected newline between object and [ of property access.*/
+
+let x = function() {}         /*error Unexpected newline between template tag and template literal.*/
+`hello`
+
+let x = function() {}
+x                             /*error Unexpected newline between template tag and template literal.*/
+`hello`
 ```
 
 The following patterns are not considered problems:
@@ -43,6 +50,12 @@ var hello = 'world';
 
 var hello = 'world'
 void [1, 2, 3].forEach(addNumber);
+
+let x = function() {};
+`hello`
+
+let tag = function() {}
+tag `hello`
 ```
 
 ## When Not To Use It

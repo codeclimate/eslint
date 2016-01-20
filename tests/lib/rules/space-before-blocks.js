@@ -19,8 +19,9 @@ var rule = require("../../../lib/rules/space-before-blocks"),
 
 var ruleTester = new RuleTester(),
     neverArgs = ["never"],
-    functionsOnlyArgs = [ { functions: "always", keywords: "never" } ],
-    keywordOnlyArgs = [ { functions: "never", keywords: "always" } ],
+    functionsOnlyArgs = [ { functions: "always", keywords: "never", classes: "never" } ],
+    keywordOnlyArgs = [ { functions: "never", keywords: "always", classes: "never" } ],
+    classesOnlyArgs = [ { functions: "never", keywords: "never", classes: "always" }],
     expectedSpacingErrorMessage = "Missing space before opening brace.",
     expectedSpacingError = { message: expectedSpacingErrorMessage },
     expectedNoSpacingErrorMessage = "Unexpected space before opening brace.",
@@ -48,25 +49,25 @@ ruleTester.run("space-before-blocks", rule, {
         {
             code: "export default class{}",
             options: functionsOnlyArgs,
-            ecmaFeatures: { modules: true, classes: true }
+            parserOptions: { sourceType: "module" }
         },
         {
             code: "export default class {}",
-            options: keywordOnlyArgs,
-            ecmaFeatures: { modules: true, classes: true }
+            options: classesOnlyArgs,
+            parserOptions: { sourceType: "module" }
         },
         {
             code: "export default function a() {}",
             options: functionsOnlyArgs,
-            ecmaFeatures: { modules: true }
+            parserOptions: { sourceType: "module" }
         },
         {
             code: "export default function a(){}",
             options: keywordOnlyArgs,
-            ecmaFeatures: { modules: true }
+            parserOptions: { sourceType: "module" }
         },
-        { code: "export function a(){}", options: keywordOnlyArgs, ecmaFeatures: {modules: true} },
-        { code: "export function a() {}", options: functionsOnlyArgs, ecmaFeatures: {modules: true} },
+        { code: "export function a(){}", options: keywordOnlyArgs, parserOptions: { sourceType: "module" } },
+        { code: "export function a() {}", options: functionsOnlyArgs, parserOptions: { sourceType: "module" } },
         { code: "function a(){}", options: keywordOnlyArgs },
         { code: "function a() {}", options: functionsOnlyArgs },
         { code: "function a(){ if(b) {} }", options: keywordOnlyArgs },
@@ -98,50 +99,49 @@ ruleTester.run("space-before-blocks", rule, {
         { code: "while(a){ function b() {} }", options: functionsOnlyArgs },
         { code: "while(a) { function b(){} }", options: keywordOnlyArgs },
         {
+            code: "class test { constructor() {} }",
+            options: [{ functions: "always", keywords: "never"}],
+            parserOptions: { ecmaVersion: 6 }
+        },
+        {
             code: "class test { constructor(){} }",
-            options: keywordOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            }
+            options: classesOnlyArgs,
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "class test{ constructor() {} }",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "class test {}",
-            options: keywordOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            }
+            options: classesOnlyArgs,
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "class test{}",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "class test{}",
             options: neverArgs,
-            ecmaFeatures: {
-                classes: true
-            }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "class test {}",
-            ecmaFeatures: {
-                classes: true
-            }
+            parserOptions: { ecmaVersion: 6 }
         },
 
         // https://github.com/eslint/eslint/issues/3769
-        {code: "()=>{};", options: ["always"], ecmaFeatures: {arrowFunctions: true}},
-        {code: "() => {};", options: ["never"], ecmaFeatures: {arrowFunctions: true}}
+        {code: "()=>{};", options: ["always"], parserOptions: { ecmaVersion: 6 }},
+        {code: "() => {};", options: ["never"], parserOptions: { ecmaVersion: 6 }},
+
+        // https://github.com/eslint/eslint/issues/1338
+        {code: "if(a) {}else{}"},
+        {code: "if(a){}else {}", options: neverArgs},
+        {code: "try {}catch(a){}", options: functionsOnlyArgs},
+        {code: "export default class{}", options: classesOnlyArgs, parserOptions: { sourceType: "module" }}
     ],
     invalid: [
         {
@@ -178,17 +178,6 @@ ruleTester.run("space-before-blocks", rule, {
             options: neverArgs,
             errors: [ expectedNoSpacingError ],
             output: "if(a){}"
-        },
-        {
-            code: "if(a) {}else{}",
-            errors: [ expectedSpacingError ],
-            output: "if(a) {}else {}"
-        },
-        {
-            code: "if(a){}else {}",
-            options: neverArgs,
-            errors: [ expectedNoSpacingError ],
-            output: "if(a){}else{}"
         },
         {
             code: "function a(){}",
@@ -267,20 +256,14 @@ ruleTester.run("space-before-blocks", rule, {
         },
         {
             code: "try{}catch(a){}",
-            errors: [ expectedSpacingError, expectedSpacingError ],
-            output: "try {}catch(a) {}"
+            errors: [ expectedSpacingError ],
+            output: "try{}catch(a) {}"
         },
         {
             code: "try {}catch(a) {}",
             options: neverArgs,
-            errors: [ expectedNoSpacingError, expectedNoSpacingError ],
-            output: "try{}catch(a){}"
-        },
-        {
-            code: "try {}catch(a){}",
-            options: functionsOnlyArgs,
             errors: [ expectedNoSpacingError ],
-            output: "try{}catch(a){}"
+            output: "try {}catch(a){}"
         },
         {
             code: "try {} catch(a){}",
@@ -373,108 +356,76 @@ ruleTester.run("space-before-blocks", rule, {
         {
             code: "export function a() { if(b) {} }",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
             errors: [ expectedNoSpacingError ],
             output: "export function a() { if(b){} }"
         },
         {
             code: "export function a(){ if(b){} }",
             options: keywordOnlyArgs,
-            ecmaFeatures: {
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
             errors: [ expectedSpacingError ],
             output: "export function a(){ if(b) {} }"
         },
         {
             code: "export function a(){}",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
             errors: [ expectedSpacingError ],
             output: "export function a() {}"
         },
         {
             code: "export default function (a) {}",
             options: keywordOnlyArgs,
-            ecmaFeatures: {
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
             errors: [ expectedNoSpacingError ],
             output: "export default function (a){}"
         },
         {
             code: "export function a() {}",
             options: keywordOnlyArgs,
-            ecmaFeatures: {
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
             errors: [ expectedNoSpacingError ],
             output: "export function a(){}"
         },
         {
-            code: "export default class{}",
-            options: keywordOnlyArgs,
-            ecmaFeatures: {
-                modules: true,
-                classes: true
-            },
-            errors: [ expectedSpacingError ],
-            output: "export default class {}"
-        },
-        {
             code: "class test{}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedSpacingError ],
             output: "class test {}"
         },
         {
             code: "class test{}",
-            options: keywordOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            },
+            options: classesOnlyArgs,
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedSpacingError ],
             output: "class test {}"
         },
         {
             code: "class test{ constructor(){} }",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedSpacingError ],
             output: "class test{ constructor() {} }"
         },
         {
             code: "class test { constructor() {} }",
-            options: keywordOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            },
+            options: classesOnlyArgs,
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedNoSpacingError ],
             output: "class test { constructor(){} }"
         },
         {
             code: "class test {}",
             options: functionsOnlyArgs,
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedNoSpacingError ],
             output: "class test{}"
         },
         {
             code: "class test {}",
             options: neverArgs,
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             errors: [ expectedNoSpacingError ],
             output: "class test{}"
         }

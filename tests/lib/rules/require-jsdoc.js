@@ -54,6 +54,16 @@ ruleTester.run("require-jsdoc", rule, {
             }]
         },
         {
+            code: "var myFunction = function() {}",
+            options: [{
+                "require": {
+                    "FunctionDeclaration": false,
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }]
+        },
+        {
             code:
                 "/**\n" +
                 " * Description for A.\n" +
@@ -67,9 +77,7 @@ ruleTester.run("require-jsdoc", rule, {
                 "        this.a = xs;" +
                 "    }\n" +
                 "}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             options: [{
                 "require": {
                     "MethodDefinition": true,
@@ -91,13 +99,70 @@ ruleTester.run("require-jsdoc", rule, {
             "        this.a = xs;" +
             "    }\n" +
             "}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             options: [{
                 "require": {
                     "MethodDefinition": true,
                     "ClassDeclaration": true
+                }
+            }]
+        },
+        {
+            code:
+            "/**\n" +
+            " * Description for A.\n" +
+            " */\n" +
+            "export default class App extends Component {\n" +
+            "    /**\n" +
+            "     * Description for constructor.\n" +
+            "     * @param {object[]} xs - xs\n" +
+            "     */\n" +
+            "    constructor(xs) {\n" +
+            "        this.a = xs;" +
+            "    }\n" +
+            "}",
+            parserOptions: { ecmaVersion: 6, sourceType: "module" },
+            options: [{
+                "require": {
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }]
+        },
+        {
+            code:
+            "/**\n" +
+            " * Description for A.\n" +
+            " */\n" +
+            "export class App extends Component {\n" +
+            "    /**\n" +
+            "     * Description for constructor.\n" +
+            "     * @param {object[]} xs - xs\n" +
+            "     */\n" +
+            "    constructor(xs) {\n" +
+            "        this.a = xs;" +
+            "    }\n" +
+            "}",
+            parserOptions: { ecmaVersion: 6, sourceType: "module" },
+            options: [{
+                "require": {
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }]
+        },
+        {
+            code:
+            "class A {\n" +
+            "    constructor(xs) {\n" +
+            "        this.a = xs;" +
+            "    }\n" +
+            "}",
+            parserOptions: { ecmaVersion: 6 },
+            options: [{
+                "require": {
+                    "MethodDefinition": false,
+                    "ClassDeclaration": false
                 }
             }]
         }
@@ -121,9 +186,7 @@ ruleTester.run("require-jsdoc", rule, {
                 "        this.a = xs;" +
                 "    }\n" +
                 "}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             options: [{
                 "require": {
                     "MethodDefinition": true,
@@ -146,9 +209,7 @@ ruleTester.run("require-jsdoc", rule, {
                 "        this.a = xs;" +
                 "    }\n" +
                 "}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             options: [{
                 "require": {
                     "MethodDefinition": true,
@@ -171,9 +232,7 @@ ruleTester.run("require-jsdoc", rule, {
             "        this.a = xs;" +
             "    }\n" +
             "}",
-            ecmaFeatures: {
-                classes: true
-            },
+            parserOptions: { ecmaVersion: 6 },
             options: [{
                 "require": {
                     "MethodDefinition": true,
@@ -196,10 +255,30 @@ ruleTester.run("require-jsdoc", rule, {
             "        this.a = xs;" +
             "    }\n" +
             "}",
-            ecmaFeatures: {
-                classes: true,
-                modules: true
-            },
+            parserOptions: { sourceType: "module" },
+            options: [{
+                "require": {
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }],
+            errors: [{
+                message: "Missing JSDoc comment.",
+                type: "ClassDeclaration"
+            }]
+        },
+        {
+            code:
+            "export default class A extends B {\n" +
+            "    /**\n" +
+            "     * Description for constructor.\n" +
+            "     * @param {object[]} xs - xs\n" +
+            "     */\n" +
+            "    constructor(xs) {\n" +
+            "        this.a = xs;" +
+            "    }\n" +
+            "}",
+            parserOptions: { sourceType: "module" },
             options: [{
                 "require": {
                     "MethodDefinition": true,

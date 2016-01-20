@@ -24,6 +24,7 @@ ruleTester.run("no-constant-condition", rule, {
         "if(a == 0);",
         "if(a = f());",
         "if(1, a);",
+        "if ('every' in []);",
         "while(~!a);",
         "while(a = b);",
         "for(;x < 10;);",
@@ -49,6 +50,6 @@ ruleTester.run("no-constant-condition", rule, {
         { code: "while(~!0);", errors: [{ message: "Unexpected constant condition.", type: "WhileStatement"}] },
         { code: "while(x = 1);", errors: [{ message: "Unexpected constant condition.", type: "WhileStatement"}] },
         { code: "while(function(){});", errors: [{ message: "Unexpected constant condition.", type: "WhileStatement"}] },
-        { code: "while(() => {});", ecmaFeatures: { arrowFunctions: true }, errors: [{ message: "Unexpected constant condition.", type: "WhileStatement"}] }
+        { code: "while(() => {});", parserOptions: { ecmaVersion: 6 }, errors: [{ message: "Unexpected constant condition.", type: "WhileStatement"}] }
     ]
 });

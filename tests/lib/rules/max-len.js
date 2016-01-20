@@ -26,6 +26,12 @@ ruleTester.run("max-len", rule, {
             code: "\t\t\tvar i = 1;\n\t\t\tvar j = 1;",
             options: [15, 1]
         }, {
+            code: "var one\t\t= 1;\nvar three\t= 3;",
+            options: [16, 4]
+        }, {
+            code: "\tvar one\t\t= 1;\n\tvar three\t= 3;",
+            options: [20, 4]
+        }, {
             code: "var i = 1;\r\nvar i = 1;\n",
             options: [10, 4]
         }, {
@@ -60,6 +66,16 @@ ruleTester.run("max-len", rule, {
                 "   but\n" +
                 "   with a short line-length */",
             options: [10, 4, {ignoreComments: true}]
+        }, {
+            code:
+                "// I like short comments\n" +
+                "function butLongSourceLines() { weird(eh()) }",
+            options: [80, {tabWidth: 4, comments: 30}]
+        }, {
+            code:
+                "// Full line comment\n" +
+                "someCode(); // With a long trailing comment.",
+            options: [{code: 30, tabWidth: 4, comments: 20, ignoreTrailingComments: true}]
         },
         // blank line
         ""
@@ -186,6 +202,28 @@ ruleTester.run("max-len", rule, {
             errors: [
                 {
                     message: "Line 1 exceeds the maximum line length of 40.",
+                    type: "Program",
+                    line: 1,
+                    column: 1
+                }
+            ]
+        }, {
+            code: "// A comment that exceeds the max comment length.",
+            options: [80, 4, {comments: 20}],
+            errors: [
+                {
+                    message: "Line 1 exceeds the maximum comment line length of 20.",
+                    type: "Program",
+                    line: 1,
+                    column: 1
+                }
+            ]
+        }, {
+            code: "// A comment that exceeds the max comment length.",
+            options: [{code: 20}],
+            errors: [
+                {
+                    message: "Line 1 exceeds the maximum line length of 20.",
                     type: "Program",
                     line: 1,
                     column: 1

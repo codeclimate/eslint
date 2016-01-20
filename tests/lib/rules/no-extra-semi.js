@@ -25,14 +25,18 @@ ruleTester.run("no-extra-semi", rule, {
         "while(0);",
         "do;while(0);",
         "for(a in b);",
-        { code: "for(a of b);", ecmaFeatures: { forOf: true } },
+        { code: "for(a of b);", parserOptions: { ecmaVersion: 6 } },
 
         // Class body.
-        {code: "class A { }", ecmaFeatures: {classes: true}},
-        {code: "var A = class { };", ecmaFeatures: {classes: true}},
-        {code: "class A { a() { this; } }", ecmaFeatures: {classes: true}},
-        {code: "var A = class { a() { this; } };", ecmaFeatures: {classes: true}},
-        {code: "class A { } a;", ecmaFeatures: {classes: true}}
+        {code: "class A { }", parserOptions: { ecmaVersion: 6 }},
+        {code: "var A = class { };", parserOptions: { ecmaVersion: 6 }},
+        {code: "class A { a() { this; } }", parserOptions: { ecmaVersion: 6 }},
+        {code: "var A = class { a() { this; } };", parserOptions: { ecmaVersion: 6 }},
+        {code: "class A { } a;", parserOptions: { ecmaVersion: 6 }},
+
+        // modules
+        {code: "export const x = 42;", parserOptions: { sourceType: "module" }},
+        {code: "export default 42;", parserOptions: { sourceType: "module" }}
     ],
     invalid: [
         {
@@ -67,7 +71,7 @@ ruleTester.run("no-extra-semi", rule, {
         },
         {
             code: "for(a of b);;",
-            ecmaFeatures: { forOf: true },
+            parserOptions: { ecmaVersion: 6 },
             errors: [{ message: "Unnecessary semicolon.", type: "EmptyStatement" }],
             output: "for(a of b);"
         },
@@ -75,37 +79,37 @@ ruleTester.run("no-extra-semi", rule, {
         // Class body.
         {
             code: "class A { ; }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 11}],
             output: "class A {  }"
         },
         {
             code: "class A { /*a*/; }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 16}],
             output: "class A { /*a*/ }"
         },
         {
             code: "class A { ; a() {} }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 11}],
             output: "class A {  a() {} }"
         },
         {
             code: "class A { a() {}; }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 17}],
             output: "class A { a() {} }"
         },
         {
             code: "class A { a() {}; b() {} }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 17}],
             output: "class A { a() {} b() {} }"
         },
         {
             code: "class A {; a() {}; b() {}; }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [
                 {message: "Unnecessary semicolon.", type: "Punctuator", column: 10},
                 {message: "Unnecessary semicolon.", type: "Punctuator", column: 18},
@@ -115,7 +119,7 @@ ruleTester.run("no-extra-semi", rule, {
         },
         {
             code: "class A { a() {}; get b() {} }",
-            ecmaFeatures: {classes: true},
+            parserOptions: { ecmaVersion: 6 },
             errors: [{message: "Unnecessary semicolon.", type: "Punctuator", column: 17}],
             output: "class A { a() {} get b() {} }"
         }

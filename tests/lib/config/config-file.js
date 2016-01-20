@@ -15,6 +15,7 @@ var assert = require("chai").assert,
     sinon = require("sinon"),
     path = require("path"),
     fs = require("fs"),
+    tmp = require("tmp"),
     yaml = require("js-yaml"),
     proxyquire = require("proxyquire"),
     environments = require("../../../conf/environments"),
@@ -47,6 +48,22 @@ function readJSModule(code) {
     return eval("var module = {};\n" + code);  // eslint-disable-line no-eval
 }
 
+/**
+ * Helper function to write configs to temp file.
+ * @param {object} config Config to write out to temp file.
+ * @param {string} filename Name of file to write in temp dir.
+ * @param {string} existingTmpDir Optional dir path if temp file exists.
+ * @returns {string} Full path to the temp file.
+ * @private
+ */
+function writeTempConfigFile(config, filename, existingTmpDir) {
+    var tmpFileDir = existingTmpDir || tmp.dirSync({prefix: "eslint-tests-"}).name,
+        tmpFilePath = path.join(tmpFileDir, filename),
+        tmpFileContents = JSON.stringify(config);
+    fs.writeFileSync(tmpFilePath, tmpFileContents);
+    return tmpFilePath;
+}
+
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
@@ -59,7 +76,7 @@ describe("ConfigFile", function() {
         });
     });
 
-    describe("applyExtends", function() {
+    describe("applyExtends()", function() {
 
         it("should apply extensions when specified from package", function() {
 
@@ -76,9 +93,9 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: "foo",
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: { browser: true },
-                globals: environments.browser.globals,
+                globals: {},
                 rules: { eqeqeq: 2 }
             });
 
@@ -105,9 +122,9 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: "foo",
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: { browser: true },
-                globals: environments.browser.globals,
+                globals: {},
                 rules: {
                     eqeqeq: 2,
                     bar: 2
@@ -125,7 +142,7 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: ".eslintrc.js",
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: {},
                 globals: {},
                 rules: {
@@ -145,9 +162,9 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: ".eslintrc.yaml",
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: { browser: true },
-                globals: environments.browser.globals,
+                globals: {},
                 rules: {
                     eqeqeq: 2
                 }
@@ -164,7 +181,7 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: ".eslintrc.json",
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: {},
                 globals: {},
                 rules: {
@@ -184,7 +201,7 @@ describe("ConfigFile", function() {
 
             assert.deepEqual(config, {
                 extends: "../package-json/package.json",
-                ecmaFeatures: environments.es6.ecmaFeatures,
+                parserOptions: {},
                 env: { es6: true },
                 globals: {},
                 rules: {
@@ -196,12 +213,22 @@ describe("ConfigFile", function() {
 
     });
 
-    describe("load", function() {
+    describe("load()", function() {
+
+        it("should throw error if file doesnt exist", function() {
+            assert.throws(function() {
+                ConfigFile.load(getFixturePath("legacy/nofile.js"));
+            });
+
+            assert.throws(function() {
+                ConfigFile.load(getFixturePath("legacy/package.json"));
+            });
+        });
 
         it("should load information from a legacy file", function() {
             var config = ConfigFile.load(getFixturePath("legacy/.eslintrc"));
             assert.deepEqual(config, {
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: {},
                 globals: {},
                 rules: {
@@ -213,7 +240,7 @@ describe("ConfigFile", function() {
         it("should load information from a JavaScript file", function() {
             var config = ConfigFile.load(getFixturePath("js/.eslintrc.js"));
             assert.deepEqual(config, {
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: {},
                 globals: {},
                 rules: {
@@ -222,10 +249,16 @@ describe("ConfigFile", function() {
             });
         });
 
+        it("should throw error when loading invalid JavaScript file", function() {
+            assert.throws(function() {
+                ConfigFile.load(getFixturePath("js/.eslintrc.broken.js"));
+            }, /Cannot read config file/);
+        });
+
         it("should load information from a JSON file", function() {
             var config = ConfigFile.load(getFixturePath("json/.eslintrc.json"));
             assert.deepEqual(config, {
-                ecmaFeatures: {},
+                parserOptions: {},
                 env: {},
                 globals: {},
                 rules: {
@@ -234,20 +267,112 @@ describe("ConfigFile", function() {
             });
         });
 
+        it("should load fresh information from a JSON file", function() {
+            var initialConfig = {
+                    parserOptions: {},
+                    env: {},
+                    globals: {},
+                    rules: {
+                        quotes: [2, "double"]
+                    }
+                },
+                updatedConfig = {
+                    parserOptions: {},
+                    env: {},
+                    globals: {},
+                    rules: {
+                        quotes: 0
+                    }
+                },
+                tmpFilename = "fresh-test.json",
+                tmpFilePath = writeTempConfigFile(initialConfig, tmpFilename),
+                config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, initialConfig);
+            writeTempConfigFile(updatedConfig, tmpFilename, path.dirname(tmpFilePath));
+            config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, updatedConfig);
+        });
+
         it("should load information from a package.json file", function() {
             var config = ConfigFile.load(getFixturePath("package-json/package.json"));
             assert.deepEqual(config, {
-                ecmaFeatures: environments.es6.ecmaFeatures,
+                parserOptions: {},
                 env: { es6: true },
                 globals: {},
                 rules: {}
             });
         });
 
+        it("should throw error when loading invalid package.json file", function() {
+            assert.throws(function() {
+                ConfigFile.load(getFixturePath("broken-package-json/package.json"));
+            }, /Cannot read config file/);
+        });
+
+        it("should load information from a package.json file and apply environments", function() {
+            var config = ConfigFile.load(getFixturePath("package-json/package.json"), true);
+            assert.deepEqual(config, {
+                parserOptions: { ecmaVersion: 6 },
+                env: { es6: true },
+                globals: environments.es6.globals,
+                rules: {}
+            });
+        });
+
+        it("should load fresh information from a package.json file", function() {
+            var initialConfig = {
+                    eslintConfig: {
+                        parserOptions: {},
+                        env: {},
+                        globals: {},
+                        rules: {
+                            quotes: [2, "double"]
+                        }
+                    }
+                },
+                updatedConfig = {
+                    eslintConfig: {
+                        parserOptions: {},
+                        env: {},
+                        globals: {},
+                        rules: {
+                            quotes: 0
+                        }
+                    }
+                },
+                tmpFilename = "package.json",
+                tmpFilePath = writeTempConfigFile(initialConfig, tmpFilename),
+                config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, initialConfig.eslintConfig);
+            writeTempConfigFile(updatedConfig, tmpFilename, path.dirname(tmpFilePath));
+            config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, updatedConfig.eslintConfig);
+        });
+
         it("should load information from a YAML file", function() {
             var config = ConfigFile.load(getFixturePath("yaml/.eslintrc.yaml"));
             assert.deepEqual(config, {
-                ecmaFeatures: {},
+                parserOptions: {},
+                env: { browser: true },
+                globals: {},
+                rules: {}
+            });
+        });
+
+        it("should load information from a YAML file", function() {
+            var config = ConfigFile.load(getFixturePath("yaml/.eslintrc.empty.yaml"));
+            assert.deepEqual(config, {
+                parserOptions: {},
+                env: {},
+                globals: {},
+                rules: {}
+            });
+        });
+
+        it("should load information from a YAML file and apply environments", function() {
+            var config = ConfigFile.load(getFixturePath("yaml/.eslintrc.yaml"), true);
+            assert.deepEqual(config, {
+                parserOptions: {},
                 env: { browser: true },
                 globals: environments.browser.globals,
                 rules: {}
@@ -257,7 +382,17 @@ describe("ConfigFile", function() {
         it("should load information from a YML file", function() {
             var config = ConfigFile.load(getFixturePath("yml/.eslintrc.yml"));
             assert.deepEqual(config, {
-                ecmaFeatures: { globalReturn: true },
+                parserOptions: {},
+                env: { node: true },
+                globals: {},
+                rules: {}
+            });
+        });
+
+        it("should load information from a YML file and apply environments", function() {
+            var config = ConfigFile.load(getFixturePath("yml/.eslintrc.yml"), true);
+            assert.deepEqual(config, {
+                parserOptions: {ecmaFeatures: { globalReturn: true }},
                 env: { node: true },
                 globals: environments.node.globals,
                 rules: {}
@@ -265,13 +400,44 @@ describe("ConfigFile", function() {
         });
 
         it("should load information from a YML file and apply extensions", function() {
-            var config = ConfigFile.load(getFixturePath("extends/.eslintrc.yml"));
+            var config = ConfigFile.load(getFixturePath("extends/.eslintrc.yml"), true);
             assert.deepEqual(config, {
                 extends: "../package-json/package.json",
-                ecmaFeatures: environments.es6.ecmaFeatures,
+                parserOptions: { ecmaVersion: 6 },
                 env: { es6: true },
-                globals: {},
+                globals: environments.es6.globals,
                 rules: { booya: 2 }
+            });
+        });
+
+
+        describe("Plugins", function() {
+
+            it("should load information from a YML file and load plugins", function() {
+
+                var StubbedPlugins = proxyquire("../../../lib/config/plugins", {
+                    "eslint-plugin-test": {
+                        environments: {
+                            bar: { globals: { bar: true } }
+                        }
+                    }
+                });
+
+                var StubbedConfigFile = proxyquire("../../../lib/config/config-file", {
+                    "./plugins": StubbedPlugins
+                });
+
+                var config = StubbedConfigFile.load(getFixturePath("plugins/.eslintrc.yml"));
+
+                assert.deepEqual(config, {
+                    parserOptions: {},
+                    env: { "test/bar": true },
+                    globals: {},
+                    plugins: [ "test" ],
+                    rules: {
+                        "test/foo": 2
+                    }
+                });
             });
         });
 
@@ -360,6 +526,12 @@ describe("ConfigFile", function() {
                 StubbedConfigFile.write(config, filename);
             });
 
+        });
+
+        it("should throw error if file extension is not valid", function() {
+            assert.throws(function() {
+                ConfigFile.write({}, getFixturePath("yaml/.eslintrc.class"));
+            }, /write to unknown file type/);
         });
     });
 

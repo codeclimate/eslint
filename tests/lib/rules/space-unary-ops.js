@@ -126,27 +126,35 @@ ruleTester.run("space-unary-ops", rule, {
         },
         {
             code: "function *foo () { yield (0) }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "function *foo() { yield +1 }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "function *foo() { yield* 0 }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "function *foo() { yield * 0 }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "function *foo() { (yield)*0 }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
         },
         {
             code: "function *foo() { (yield) * 0 }",
-            ecmaFeatures: { generators: true }
+            parserOptions: { ecmaVersion: 6 }
+        },
+        {
+            code: "function *foo() { yield*0 }",
+            parserOptions: { ecmaVersion: 6 }
+        },
+        {
+            code: "function *foo() { yield *0 }",
+            parserOptions: { ecmaVersion: 6 }
         }
     ],
 
@@ -156,7 +164,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "delete (foo.bar)",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"delete\" must be followed by whitespace.",
+                message: "Unary word operator 'delete' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -165,7 +173,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "delete (foo[\"bar\"]);",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"delete\" must be followed by whitespace.",
+                message: "Unary word operator 'delete' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -174,7 +182,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "new (Foo)",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"new\" must be followed by whitespace.",
+                message: "Unary word operator 'new' must be followed by whitespace.",
                 type: "NewExpression"
             }]
         },
@@ -183,7 +191,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "new (Foo())",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"new\" must be followed by whitespace.",
+                message: "Unary word operator 'new' must be followed by whitespace.",
                 type: "NewExpression"
             }]
         },
@@ -193,7 +201,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "typeof (foo)",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"typeof\" must be followed by whitespace.",
+                message: "Unary word operator 'typeof' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -202,7 +210,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "typeof {foo:true}",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"typeof\" must be followed by whitespace.",
+                message: "Unary word operator 'typeof' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -211,7 +219,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "typeof{foo:true}",
             options: [{ "words": false }],
             errors: [{
-                message: "Unexpected space after unary word operator \"typeof\".",
+                message: "Unexpected space after unary word operator 'typeof'.",
                 type: "UnaryExpression"
             }]
         },
@@ -220,7 +228,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "typeof !foo",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"typeof\" must be followed by whitespace.",
+                message: "Unary word operator 'typeof' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -230,7 +238,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "void (0);",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"void\" must be followed by whitespace.",
+                message: "Unary word operator 'void' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -239,7 +247,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "void (foo);",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"void\" must be followed by whitespace.",
+                message: "Unary word operator 'void' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -248,7 +256,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "void {a:0};",
             options: [{ "words": true }],
             errors: [{
-                message: "Unary word operator \"void\" must be followed by whitespace.",
+                message: "Unary word operator 'void' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -258,7 +266,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "!foo",
             options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space after unary operator \"!\"."
+                message: "Unexpected space after unary operator '!'."
             }]
         },
         {
@@ -266,7 +274,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "! foo",
             options: [{ "nonwords": true }],
             errors: [{
-                message: "Unary operator \"!\" must be followed by whitespace."
+                message: "Unary operator '!' must be followed by whitespace."
             }]
         },
 
@@ -275,7 +283,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "!!foo",
             options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space after unary operator \"!\".",
+                message: "Unexpected space after unary operator '!'.",
                 type: "UnaryExpression",
                 line: 1,
                 column: 2
@@ -286,7 +294,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "!! foo",
             options: [{ "nonwords": true }],
             errors: [{
-                message: "Unary operator \"!\" must be followed by whitespace.",
+                message: "Unary operator '!' must be followed by whitespace.",
                 type: "UnaryExpression",
                 line: 1,
                 column: 2
@@ -298,7 +306,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "-1",
             options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space after unary operator \"-\".",
+                message: "Unexpected space after unary operator '-'.",
                 type: "UnaryExpression"
             }]
         },
@@ -307,7 +315,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "- 1",
             options: [{ "nonwords": true }],
             errors: [{
-                message: "Unary operator \"-\" must be followed by whitespace.",
+                message: "Unary operator '-' must be followed by whitespace.",
                 type: "UnaryExpression"
             }]
         },
@@ -317,7 +325,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "foo ++",
             options: [{ "nonwords": true }],
             errors: [{
-                message: "Space is required before unary expressions \"++\"."
+                message: "Space is required before unary expressions '++'."
             }]
         },
         {
@@ -325,7 +333,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "foo++",
             options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space before unary operator \"++\"."
+                message: "Unexpected space before unary operator '++'."
             }]
         },
         {
@@ -333,7 +341,7 @@ ruleTester.run("space-unary-ops", rule, {
             output: "++foo",
             options: [{ "nonwords": false }],
             errors: [{
-                message: "Unexpected space after unary operator \"++\"."
+                message: "Unexpected space after unary operator '++'."
             }]
         },
         {
@@ -341,15 +349,15 @@ ruleTester.run("space-unary-ops", rule, {
             output: "++ foo",
             options: [{ "nonwords": true }],
             errors: [{
-                message: "Unary operator \"++\" must be followed by whitespace."
+                message: "Unary operator '++' must be followed by whitespace."
             }]
         },
         {
             code: "function *foo() { yield(0) }",
             output: "function *foo() { yield (0) }",
-            ecmaFeatures: { generators: true },
+            parserOptions: { ecmaVersion: 6 },
             errors: [{
-                message: "Unary word operator \"yield\" must be followed by whitespace.",
+                message: "Unary word operator 'yield' must be followed by whitespace.",
                 type: "YieldExpression",
                 line: 1,
                 column: 19
@@ -358,31 +366,9 @@ ruleTester.run("space-unary-ops", rule, {
         {
             code: "function *foo() { yield+0 }",
             output: "function *foo() { yield +0 }",
-            ecmaFeatures: { generators: true },
+            parserOptions: { ecmaVersion: 6 },
             errors: [{
-                message: "Unary word operator \"yield\" must be followed by whitespace.",
-                type: "YieldExpression",
-                line: 1,
-                column: 19
-            }]
-        },
-        {
-            code: "function *foo() { yield*0 }",
-            output: "function *foo() { yield* 0 }",
-            ecmaFeatures: { generators: true },
-            errors: [{
-                message: "Unary word operator \"yield*\" must be followed by whitespace.",
-                type: "YieldExpression",
-                line: 1,
-                column: 19
-            }]
-        },
-        {
-            code: "function *foo() { yield *0 }",
-            output: "function *foo() { yield * 0 }",
-            ecmaFeatures: { generators: true },
-            errors: [{
-                message: "Unary word operator \"yield*\" must be followed by whitespace.",
+                message: "Unary word operator 'yield' must be followed by whitespace.",
                 type: "YieldExpression",
                 line: 1,
                 column: 19

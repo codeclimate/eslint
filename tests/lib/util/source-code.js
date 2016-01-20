@@ -10,7 +10,9 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-var assert = require("chai").assert,
+var fs = require("fs"),
+    path = require("path"),
+    assert = require("chai").assert,
     espree = require("espree"),
     sinon = require("sinon"),
     leche = require("leche"),
@@ -22,9 +24,7 @@ var assert = require("chai").assert,
 //------------------------------------------------------------------------------
 
 var DEFAULT_CONFIG = {
-    ecmaFeatures: {
-        blockBindings: true
-    },
+    ecmaVersion: 6,
     comment: true,
     tokens: true,
     range: true,
@@ -109,6 +109,71 @@ describe("SourceCode", function() {
             var actual = sourceCode.tokensAndComments;
             var expected = [comments[0], tokens[0], tokens[1], comments[1], tokens[2]];
             assert.deepEqual(actual, expected);
+        });
+
+        describe("if a text has BOM,", function() {
+            var sourceCode;
+
+            beforeEach(function() {
+                var ast = { comments: [], tokens: [], loc: {}, range: [] };
+                sourceCode = new SourceCode("\uFEFFconsole.log('hello');", ast);
+            });
+
+            it("should has true at `hasBOM` property.", function() {
+                assert.equal(sourceCode.hasBOM, true);
+            });
+
+            it("should not has BOM in `text` property.", function() {
+                assert.equal(sourceCode.text, "console.log('hello');");
+            });
+        });
+
+        describe("if a text doesn't have BOM,", function() {
+            var sourceCode;
+
+            beforeEach(function() {
+                var ast = { comments: [], tokens: [], loc: {}, range: [] };
+                sourceCode = new SourceCode("console.log('hello');", ast);
+            });
+
+            it("should has false at `hasBOM` property.", function() {
+                assert.equal(sourceCode.hasBOM, false);
+            });
+
+            it("should not has BOM in `text` property.", function() {
+                assert.equal(sourceCode.text, "console.log('hello');");
+            });
+        });
+
+        describe("when it read a UTF-8 file (has BOM), SourceCode", function() {
+            var UTF8_FILE = path.resolve(__dirname, "../../fixtures/utf8-bom.js");
+            var text = fs.readFileSync(
+                    UTF8_FILE,
+                    "utf8"
+                ).replace(/\r\n/g, "\n"); // <-- For autocrlf of "git for Windows"
+            var sourceCode;
+
+            beforeEach(function() {
+                var ast = { comments: [], tokens: [], loc: {}, range: [] };
+                sourceCode = new SourceCode(text, ast);
+            });
+
+            it("to be clear, check the file has UTF-8 BOM.", function() {
+                var buffer = fs.readFileSync(UTF8_FILE);
+                assert.equal(buffer[0], 0xEF);
+                assert.equal(buffer[1], 0xBB);
+                assert.equal(buffer[2], 0xBF);
+            });
+
+            it("should has true at `hasBOM` property.", function() {
+                assert.equal(sourceCode.hasBOM, true);
+            });
+
+            it("should not has BOM in `text` property.", function() {
+                assert.equal(
+                    sourceCode.text,
+                    "\"use strict\";\n\nconsole.log(\"This file has [0xEF, 0xBB, 0xBF] as BOM.\");\n");
+            });
         });
     });
 
@@ -209,6 +274,36 @@ describe("SourceCode", function() {
 
         });
 
+        it("should get JSDoc comment for FunctionExpression in a CallExpression", function() {
+            var code = [
+                "call(",
+                "  /** Documentation. */",
+                "  function(argName) {",
+                "    return 'the return';",
+                "  }",
+                ");"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.equal(jsdoc.type, "Block");
+                assert.equal(jsdoc.value, "* Documentation. ");
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("FunctionExpression", spy);
+            eslint.verify(code, {rules: {}}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
         it("should get JSDoc comment for node when the node is a FunctionDeclaration", function() {
 
             var code = [
@@ -260,7 +355,7 @@ describe("SourceCode", function() {
             var spy = sandbox.spy(assertJSDoc);
 
             eslint.on("FunctionDeclaration", spy);
-            eslint.verify(code, { ecmaFeatures: { modules: true }, rules: {}}, filename, true);
+            eslint.verify(code, { parserOptions: { sourceType: "module" }, rules: {}}, filename, true);
             assert.isTrue(spy.calledOnce, "Event handler should be called.");
 
         });
@@ -440,7 +535,7 @@ describe("SourceCode", function() {
             var spy = sandbox.spy(assertJSDoc);
 
             eslint.on("ArrowFunctionExpression", spy);
-            eslint.verify(code, { ecmaFeatures: { arrowFunctions: true }, rules: {}}, filename, true);
+            eslint.verify(code, { parserOptions: { ecmaVersion: 6 }, rules: {}}, filename, true);
             assert.isTrue(spy.calledOnce, "Event handler should be called.");
         });
 
@@ -625,7 +720,7 @@ describe("SourceCode", function() {
             var spy = sandbox.spy(assertJSDoc);
 
             eslint.on("ClassExpression", spy);
-            eslint.verify(code, { rules: {}, ecmaFeatures: {classes: true}}, filename, true);
+            eslint.verify(code, { rules: {}, parserOptions: { ecmaVersion: 6 }}, filename, true);
             assert.isTrue(spy.calledOnce, "Event handler should be called.");
         });
 
@@ -653,7 +748,97 @@ describe("SourceCode", function() {
             var spy = sandbox.spy(assertJSDoc);
 
             eslint.on("ClassDeclaration", spy);
-            eslint.verify(code, { rules: {}, ecmaFeatures: {classes: true}}, filename, true);
+            eslint.verify(code, { rules: {}, parserOptions: { ecmaVersion: 6 }}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
+        it("should not get JSDoc comment for class method even if the class has jsdoc present", function() {
+
+            var code = [
+                "/** Merges two objects together.*/",
+                "var A = class {",
+                "    constructor(xs) {}",
+                "};"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.isNull(jsdoc);
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("FunctionExpression", spy);
+            eslint.verify(code, { rules: {}, parserOptions: { ecmaVersion: 6 }}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
+        it("should get JSDoc comment for function expression even if function has blank lines on top", function() {
+
+            var code = [
+                "/** Merges two objects together.*/",
+                "var A = ",
+                " ",
+                " ",
+                " ",
+                "     function() {",
+                "};"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.equal(jsdoc.type, "Block");
+                assert.equal(jsdoc.value, "* Merges two objects together.");
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("FunctionExpression", spy);
+            eslint.verify(code, { rules: {}, parserOptions: { ecmaVersion: 6 }}, filename, true);
+            assert.isTrue(spy.calledOnce, "Event handler should be called.");
+        });
+
+        it("should not get JSDoc comment for function declaration when the function has blank lines on top", function() {
+
+            var code = [
+                "/** Merges two objects together.*/",
+                " ",
+                " ",
+                " ",
+                "function test() {",
+                "};"
+            ].join("\n");
+
+            /**
+             * Check jsdoc presence
+             * @param {ASTNode} node not to check
+             * @returns {void}
+             * @private
+             */
+            function assertJSDoc(node) {
+                var sourceCode = eslint.getSourceCode();
+                var jsdoc = sourceCode.getJSDocComment(node);
+                assert.isNull(jsdoc);
+            }
+
+            var spy = sandbox.spy(assertJSDoc);
+
+            eslint.on("FunctionDeclaration", spy);
+            eslint.verify(code, { rules: {}, parserOptions: { ecmaVersion: 6 }}, filename, true);
             assert.isTrue(spy.calledOnce, "Event handler should be called.");
         });
 
@@ -903,9 +1088,7 @@ describe("SourceCode", function() {
     describe("eslint.verify()", function() {
 
         var CONFIG = {
-            ecmaFeatures: {
-                blockBindings: true
-            }
+            parserOptions: { ecmaVersion: 6 }
         };
 
         it("should work when passed a SourceCode object without a config", function() {
@@ -927,12 +1110,12 @@ describe("SourceCode", function() {
         it("should report an error when using let and blockBindings is false", function() {
             var sourceCode = new SourceCode("let foo = bar;", AST),
                 messages = eslint.verify(sourceCode, {
-                    ecmaFeatures: { blockBindings: true },
+                    parserOptions: { ecmaVersion: 6 },
                     rules: { "no-unused-vars": 2 }
                 });
 
             assert.equal(messages.length, 1);
-            assert.equal(messages[0].message, "\"foo\" is defined but never used");
+            assert.equal(messages[0].message, "'foo' is defined but never used");
         });
     });
 });

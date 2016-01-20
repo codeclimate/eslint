@@ -16,7 +16,7 @@ This rule aims to eliminate the use of dangling underscores in identifiers.
 
 ### Options
 
-#### allow
+#### `allow`
 
 ```json
 "no-underscore-dangle": [2, { "allow": [] }]
@@ -24,14 +24,22 @@ This rule aims to eliminate the use of dangling underscores in identifiers.
 
 Array of variable names that are permitted to be used with underscore. If provided, it must be an `Array`.
 
+#### `allowAfterThis`
+
+```json
+"no-underscore-dangle": [2, { "allowAfterThis": true }]
+```
+
+This option allows usage of dangled variables as members of `this`.
+
 The following patterns are considered problems:
 
 ```js
 /*eslint no-underscore-dangle: 2*/
 
-var foo_;           /*error Unexpected dangling "_" in "foo_".*/
-var __proto__ = {}; /*error Unexpected dangling "_" in "__proto__".*/
-foo._bar();         /*error Unexpected dangling "_" in "_bar".*/
+var foo_;           /*error Unexpected dangling '_' in 'foo_'.*/
+var __proto__ = {}; /*error Unexpected dangling '_' in '__proto__'.*/
+foo._bar();         /*error Unexpected dangling '_' in '_bar'.*/
 ```
 
 The following patterns are not considered problems:
@@ -53,7 +61,13 @@ var foo_;
 foo._bar();
 ```
 
+```js
+/*eslint no-underscore-dangle: [2, { "allowAfterThis": true }]*/
+
+var a = this.foo_;
+this._bar();
+```
+
 ## When Not To Use It
 
 If you want to allow dangling underscores in identifiers, then you can safely turn this rule off.
-

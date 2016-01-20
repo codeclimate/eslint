@@ -15,8 +15,8 @@ The following code causes 2 warnings, as the globals `someFunction` and `b` have
 ```js
 /*eslint no-undef: 2*/
 
-var a = someFunction();  /*error "someFunction" is not defined.*/
-b = 10;                  /*error "b" is not defined.*/
+var a = someFunction();  /*error 'someFunction' is not defined.*/
+b = 10;                  /*error 'b' is not defined.*/
 ```
 
 In this code, no warnings are generated, since the global variables have been properly declared in a `/*global */` block.
@@ -58,7 +58,7 @@ if (typeof UndefinedIdentifier === "undefined") {
 }
 ```
 
-#### typeof
+#### `typeof`
 
 You can use this option if you want to prevent `typeof` check on a variable which has not been declared.
 
@@ -67,7 +67,7 @@ The following patterns are considered problems with option `typeof` set:
 ```js
 /* eslint no-undef: [2, { typeof: true }] */
 
-if(typeof a === "string"){}      /* error "a" is not defined. */
+if(typeof a === "string"){}      /* error 'a' is not defined. */
 ```
 
 The following patterns are not considered problems with option `typeof` set:
@@ -83,7 +83,7 @@ if(typeof a === "string"){}
 
 For convenience, ESLint provides shortcuts that pre-define global variables exposed by popular libraries and runtime environments. This rule supports these environments, as listed in [Specifying Environments](http://eslint.org/docs/user-guide/configuring#specifying-environments).  A few examples are given below.
 
-### browser
+### `browser`
 
 Defines common browser globals.
 
@@ -95,7 +95,7 @@ setTimeout(function() {
 });
 ```
 
-### node
+### `node`
 
 Defines globals for Node.js development.
 

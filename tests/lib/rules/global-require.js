@@ -29,11 +29,13 @@ var valid = [
     { code: "require('y');" },
     { code: "function x(){}\n\n\nx();\n\n\nif (x > y) {\n\tdoSomething()\n\n}\n\nvar x = require('y').foo;" },
     { code: "var logger = require(DEBUG ? 'dev-logger' : 'logger');" },
-    { code: "var logger = DEBUG ? require('dev-logger') : require('logger');" }
+    { code: "var logger = DEBUG ? require('dev-logger') : require('logger');" },
+    { code: "function localScopedRequire(require) { require('y'); }" },
+    { code: "var someFunc = require('./someFunc'); someFunc(function(require) { return('bananas'); });" }
 ];
 
-var message = message;
-var type = type;
+var message = "Unexpected require().";
+var type = "CallExpression";
 
 var invalid = [
 
@@ -87,7 +89,7 @@ var invalid = [
     // non-block statements
     {
         code: "var getModule = x => require(x);",
-        ecmaFeatures: { arrowFunctions: true },
+        parserOptions: { ecmaVersion: 6 },
         errors: [{
             line: 1,
             column: 22,
@@ -97,7 +99,7 @@ var invalid = [
     },
     {
         code: "var x = (x => require(x))('weird')",
-        ecmaFeatures: { arrowFunctions: true },
+        parserOptions: { ecmaVersion: 6 },
         errors: [{
             line: 1,
             column: 15,
