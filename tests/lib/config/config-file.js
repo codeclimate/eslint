@@ -15,6 +15,7 @@ var assert = require("chai").assert,
     sinon = require("sinon"),
     path = require("path"),
     fs = require("fs"),
+    tmp = require("tmp"),
     yaml = require("js-yaml"),
     proxyquire = require("proxyquire"),
     environments = require("../../../conf/environments"),
@@ -45,6 +46,22 @@ function getFixturePath(filepath) {
  */
 function readJSModule(code) {
     return eval("var module = {};\n" + code);  // eslint-disable-line no-eval
+}
+
+/**
+ * Helper function to write configs to temp file.
+ * @param {object} config Config to write out to temp file.
+ * @param {string} filename Name of file to write in temp dir.
+ * @param {string} existingTmpDir Optional dir path if temp file exists.
+ * @returns {string} Full path to the temp file.
+ * @private
+ */
+function writeTempConfigFile(config, filename, existingTmpDir) {
+    var tmpFileDir = existingTmpDir || tmp.dirSync({prefix: "eslint-tests-"}).name,
+        tmpFilePath = path.join(tmpFileDir, filename),
+        tmpFileContents = JSON.stringify(config);
+    fs.writeFileSync(tmpFilePath, tmpFileContents);
+    return tmpFilePath;
 }
 
 //------------------------------------------------------------------------------
@@ -186,7 +203,7 @@ describe("ConfigFile", function() {
                 extends: "../package-json/package.json",
                 ecmaFeatures: environments.es6.ecmaFeatures,
                 env: { es6: true },
-                globals: {},
+                globals: environments.es6.globals,
                 rules: {
                     eqeqeq: 2
                 }
@@ -234,14 +251,70 @@ describe("ConfigFile", function() {
             });
         });
 
+        it("should load fresh information from a JSON file", function() {
+            var initialConfig = {
+                    ecmaFeatures: {},
+                    env: {},
+                    globals: {},
+                    rules: {
+                        quotes: [2, "double"]
+                    }
+                },
+                updatedConfig = {
+                    ecmaFeatures: {},
+                    env: {},
+                    globals: {},
+                    rules: {
+                        quotes: 0
+                    }
+                },
+                tmpFilename = "fresh-test.json",
+                tmpFilePath = writeTempConfigFile(initialConfig, tmpFilename),
+                config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, initialConfig);
+            writeTempConfigFile(updatedConfig, tmpFilename, path.dirname(tmpFilePath));
+            config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, updatedConfig);
+        });
+
         it("should load information from a package.json file", function() {
             var config = ConfigFile.load(getFixturePath("package-json/package.json"));
             assert.deepEqual(config, {
                 ecmaFeatures: environments.es6.ecmaFeatures,
                 env: { es6: true },
-                globals: {},
+                globals: environments.es6.globals,
                 rules: {}
             });
+        });
+
+        it("should load fresh information from a package.json file", function() {
+            var initialConfig = {
+                    eslintConfig: {
+                        ecmaFeatures: {},
+                        env: {},
+                        globals: {},
+                        rules: {
+                            quotes: [2, "double"]
+                        }
+                    }
+                },
+                updatedConfig = {
+                    eslintConfig: {
+                        ecmaFeatures: {},
+                        env: {},
+                        globals: {},
+                        rules: {
+                            quotes: 0
+                        }
+                    }
+                },
+                tmpFilename = "package.json",
+                tmpFilePath = writeTempConfigFile(initialConfig, tmpFilename),
+                config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, initialConfig.eslintConfig);
+            writeTempConfigFile(updatedConfig, tmpFilename, path.dirname(tmpFilePath));
+            config = ConfigFile.load(tmpFilePath);
+            assert.deepEqual(config, updatedConfig.eslintConfig);
         });
 
         it("should load information from a YAML file", function() {
@@ -270,7 +343,7 @@ describe("ConfigFile", function() {
                 extends: "../package-json/package.json",
                 ecmaFeatures: environments.es6.ecmaFeatures,
                 env: { es6: true },
-                globals: {},
+                globals: environments.es6.globals,
                 rules: { booya: 2 }
             });
         });

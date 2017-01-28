@@ -544,6 +544,7 @@ target.gensite = function() {
         "/rules/",
         "/user-guide/command-line-interface.md",
         "/user-guide/configuring.md",
+        "/developer-guide/code-path-analysis.md",
         "/developer-guide/nodejs-api.md",
         "/developer-guide/working-with-plugins.md",
         "/developer-guide/working-with-rules.md"
@@ -582,7 +583,7 @@ target.gensite = function() {
 
     // 4. Loop through all files in temporary directory
     find(TEMP_DIR).forEach(function(filename) {
-        if (test("-f", filename) && path.extname(filename) !== "") {
+        if (test("-f", filename) && path.extname(filename) === ".md") {
 
             var rulesUrl = "https://github.com/eslint/eslint/tree/master/lib/rules/";
             var docsUrl = "https://github.com/eslint/eslint/tree/master/docs/rules/";
@@ -1004,7 +1005,7 @@ function time(cmd, runs, runNumber, results, cb) {
         results.push(actual);
         echo("Performance Run #" + runNumber + ":  %dms", actual);
         if (runs > 1) {
-            time(cmd, runs - 1, runNumber + 1, results, cb);
+            return time(cmd, runs - 1, runNumber + 1, results, cb);
         } else {
             return cb(results);
         }

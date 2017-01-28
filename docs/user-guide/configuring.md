@@ -378,7 +378,7 @@ There are two ways to use configuration files. The first is to save the file whe
 
     eslint -c myconfig.json myfiletotest.js
 
-The second way to use configuration files is via `.eslintrc` and `package.json` files. ESLint will automatically look for them in the directory of the file to be linted, and in successive parent directories all the way up to the root directory of the filesystem. This option is useful when you want different configurations for different parts of a project or when you want others to be able to use ESLint directly without needing to remember to pass in the configuration file.
+The second way to use configuration files is via `.eslintrc.*` and `package.json` files. ESLint will automatically look for them in the directory of the file to be linted, and in successive parent directories all the way up to the root directory of the filesystem. This option is useful when you want different configurations for different parts of a project or when you want others to be able to use ESLint directly without needing to remember to pass in the configuration file.
 
 In each case, the settings in the configuration file override default settings.
 
@@ -389,21 +389,22 @@ ESLint supports configuration files in several formats:
 * **JavaScript** - use `.eslintrc.js` and export an object containing your configuration.
 * **YAML** - use `.eslintrc.yaml` or `.eslintrc.yml` to define the configuration structure.
 * **JSON** - use `.eslintrc.json` to define the configuration structure. ESLint's JSON files also allow JavaScript-style comments.
-* **package.json** - create an `eslintConfig` property in your `package.json` file and define your configuration there.
 * **Deprecated** - use `.eslintrc`, which can be either JSON or YAML.
+* **package.json** - create an `eslintConfig` property in your `package.json` file and define your configuration there.
 
-If there are multiple `.eslintrc.*` files in the same directory, ESLint will only use one. The priority order is:
+If there are multiple configuration files in the same directory, ESLint will only use one. The priority order is:
 
 1. `.eslintrc.js`
 1. `.eslintrc.yaml`
 1. `.eslintrc.yml`
 1. `.eslintrc.json`
 1. `.eslintrc`
+1. `package.json`
 
 
 ## Configuration Cascading and Hierarchy
 
-When using `.eslintrc` and `package.json` files for configuration, you can take advantage of configuration cascading. For instance, suppose you have the following structure:
+When using `.eslintrc.*` and `package.json` files for configuration, you can take advantage of configuration cascading. For instance, suppose you have the following structure:
 
 ```text
 your-project
@@ -429,11 +430,11 @@ your-project
   └── test.js
 ```
 
-If there is an `.eslintrc` and a `package.json` file found in the same directory, both will be used, with the `.eslintrc` having the higher precendence.
+If there is an `.eslintrc` and a `package.json` file found in the same directory, `.eslintrc` will take a priority and `package.json` file will not be used.
 
 **Note:** If you have a personal configuration file in your home directory (`~/.eslintrc`), it will only be used if no other configuration files are found. Since a personal configuration would apply to everything inside of a user's directory, including third-party code, this could cause problems when running ESLint.
 
-By default, ESLint will look for configuration files in all parent folders up to the root directory. This can be useful if you want all of your projects to follow a certain convention, but can sometimes lead to unexpected results. To limit ESLint to a specific project, place `"root": true` inside the `eslintConfig` field of the `package.json` file or in the `.eslintrc` file at your project's root level.  ESLint will stop looking in parent folders once it finds a configuration with `"root": true`.
+By default, ESLint will look for configuration files in all parent folders up to the root directory. This can be useful if you want all of your projects to follow a certain convention, but can sometimes lead to unexpected results. To limit ESLint to a specific project, place `"root": true` inside the `eslintConfig` field of the `package.json` file or in the `.eslintrc.*` file at your project's root level.  ESLint will stop looking in parent folders once it finds a configuration with `"root": true`.
 
 ```js
 {
@@ -474,8 +475,7 @@ The complete configuration hierarchy, from highest precedence to lowest preceden
     1. `--env`
     1. `-c`, `--config`
 3. Project-level configuration:
-    1. `.eslintrc` file in same directory as linted file
-    1. `package.json` file in same directory as linted file
+    1. `.eslintrc.*` or `package.json` file in same directory as linted file
     1. Continue searching for `.eslintrc` and `package.json` files in ancestor directories (parent has highest precedence, then grandparent, etc.), up to and including the root directory or until a config with `"root": true` is found.
     1. In the absence of any configuration from (1) thru (3), fall back to a personal default configuration in  `~/.eslintrc`.
 
@@ -574,12 +574,12 @@ Globs are matched using [minimatch](https://github.com/isaacs/minimatch), so a n
 * Lines preceded by `!` are negated patterns that re-include a pattern that was ignored by an earlier pattern.
 * Brace expansion can refer to multiple files in a pattern. For example, `file.{js,ts,coffee}` will ignore `file.js`, `file.ts`, and `file.coffee`.
 
-In addition to any patterns in a `.eslintignore` file, ESLint always ignores files in `node_modules/**`.
+In addition to any patterns in a `.eslintignore` file, ESLint always ignores files in `node_modules/**` and `bower_components/**`.
 
-For example, placing the following `.eslintignore` file in the current working directory will ignore all of `node_modules`, any files with the extensions `.ts.js` or `.coffee.js` extension that might have been transpiled, and anything in the `build/` directory except `build/index.js`:
+For example, placing the following `.eslintignore` file in the current working directory will ignore all of `node_modules`, `bower_components`, any files with the extensions `.ts.js` or `.coffee.js` extension that might have been transpiled, and anything in the `build/` directory except `build/index.js`:
 
 ```text
-# node_modules ignored by default
+# node_modules and bower_components ignored by default
 
 # Ignore files compiled from TypeScript and CoffeeScript
 **/*.{ts,coffee}.js

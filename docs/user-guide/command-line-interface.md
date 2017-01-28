@@ -1,4 +1,4 @@
-# Command line Interface
+# Command Line Interface
 
 To run ESLint on Node.js, you must have npm installed. If npm is not installed, follow the instructions here: https://www.npmjs.com/
 
@@ -73,13 +73,13 @@ Miscellaneous:
                              default: false
 ```
 
-Options that accept array values can be specified by repeating the option or with a comma-delimited list.
+Options that accept array values can be specified by repeating the option or with a comma-delimited list (other than `--ignore-pattern` which does not allow the second style).
 
 Example:
 
-    eslint --ignore-pattern a.js --ignore-pattern b.js file.js
+    eslint --ext .jsx --ext .js file.js
 
-    eslint --ignore-pattern a.js,b.js file.js
+    eslint --ext .jsx,.js file.js
 
 ### Basic configuration
 
@@ -362,3 +362,5 @@ ESLint supports `.eslintignore` files to exclude files from the linting process 
 
     node_modules/*
     **/vendor/*.js
+
+A more detailed breakdown of supported patterns and directories ESLint ignores by default can be found in [Configuring ESLint](http://eslint.org/docs/user-guide/configuring#ignoring-files-and-directories).
